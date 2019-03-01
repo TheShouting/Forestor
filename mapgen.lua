@@ -1,7 +1,9 @@
+--module("mymath", package.seeall)
+
+
 mapgen = {}
 
-
-function generate(w, h, seed)
+function mapgen.generate(w, h, seed)
 
    -- My very hacky level generation
    local final = mapgen.make(w, h, "tree")
@@ -11,7 +13,7 @@ function generate(w, h, seed)
    local tmap =
       mapgen.cellauto(w, h, "tree", "dirt", 3, 0.5)
    
-   tmap = maogen.apply(final, tmap, "tree")
+   tmap = mapgen.apply(final, tmap, "tree")
       
    mapgen.clear(tmap, 1, 1, 3, "dirt")
    
@@ -26,7 +28,7 @@ function generate(w, h, seed)
    local wmap = 
       mapgen.cellauto(w, h, "puddle", "dirt", 1, 0.5)
       
-   final = make(w, h, "grass")
+   final = mapgen.make(w, h, "grass")
    mapgen.noise(final, 0.05, "flower")
    mapgen.noise(final, 0.01, "stump")
    gmap = mapgen.apply(final, gmap, "grass")
@@ -75,7 +77,7 @@ end
 
 function mapgen.cellauto(w, h, a, b, gen, noi)
 
-   local map = make(w, h, b)
+   local map = mapgen.make(w, h, b)
    mapgen.noise(map, noi, a)
 
    s8 = {{1,0}, {1,1}, {0,1}, {-1,1},
