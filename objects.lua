@@ -42,7 +42,7 @@ end
 function objects.prop:update(owner)
 end
 
--- objects.actor class --------------------------------
+-- objects.actor class --------------------------
 objects.actor = {}
 objects.actor.__index = objects.actor
 setmetatable(objects.actor, {
@@ -53,13 +53,14 @@ setmetatable(objects.actor, {
    end,
 })
 
-function objects.actor:_init(char, hp, str, name)
-   self.name = name
-   self.head = char
+function objects.actor:_init(brain, char, name)
+   self.think = brain
+   self.head = char or "a"
+   self.name = name or "actor"
    self.alive = true
-   self.rot = 3
-   self.hp = hp
-   self.str = str
+   self.rot = 1
+   self.hp = 100
+   self.str = 10
    self.pos = {x=0, y=0}
    self.effect = {}
 end
@@ -94,13 +95,19 @@ function objects.actor:update(world)
       end
    end
    
-   return self:think(world)
+   if (self.think) then
+      --return self.think(self, world)
+      return controller[self.think](self, world)
+   else
+      return {x=0, y=0}
+   end
 end
 
+--[[
 function objects.actor:think(world)
    return world.rpath()
-   
 end
+--]]
 
 function objects.actor:die()
    -- Drop a random item if an actor dies
@@ -118,16 +125,14 @@ function objects.actor:die()
    end
 end
 
-function objects.actor:key()
 
+function objects.actor:key()
    if (self.right) then
-      if (self.right.key) then
-         return self.right.key
-      end
+      return self.right.key
    end
    return nil
-
 end
+
 
 function objects.actor:char()
    local l = " "
@@ -181,14 +186,10 @@ setmetatable(objects.player,{
 })
 
 function objects.player:_init(hp, str)
-   objects.actor._init(self, "@", hp, str, "me")
-   self.cmd = {x=0, y=0}
+   objects.actor._init(
+      self, "player", "@", "me")
+   self.hp = hp
+   self.str = str
 end
 
-function objects.player:command(x, y)
-   self.cmd = {x=x, y=y}
-end
 
-function objects.player:think(world)
-   return self.cmd
-end

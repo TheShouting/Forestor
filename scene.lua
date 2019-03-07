@@ -29,7 +29,6 @@ function scene:exit() end
 function scene:input(x, y, time)
 
    for i, w in ipairs(self.widgets) do
-   
       if (x > w.x and x < w.x + w.w) then
          if (y > w.y and y < w.y + w.h) then
             if w.act then
@@ -38,28 +37,17 @@ function scene:input(x, y, time)
             end
          end
       end
-      
    end
    
 end
 
 function scene:update(dt)
-   for i, w in ipairs(self.widgets) do
-      if w.update then
-         w.timer = love.timer.getTime()
-         w:update(dt)
-      end
-   end
-   
-   return self.sceneControl
+   local out = self.sceneControl
+   self.sceneControl = nil
+   return out
 end
 
 function scene:draw()
-   for i, w in ipairs(self.widgets) do
-      if w.draw then
-         w:draw()
-      end
-   end
 end
 
 

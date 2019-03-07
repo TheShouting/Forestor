@@ -1,5 +1,13 @@
 util = {}
 
+function util.copy(t)
+   local ct = {}
+   for k, v in pairs(t) do
+      ct[k] = v
+   end
+   return ct
+end
+
 
 function util.lerprgb(a, b, t)
    local r = a[1] + (b[1] - a[1]) * t
@@ -9,18 +17,26 @@ function util.lerprgb(a, b, t)
 end
 
 
-function util.processcolor(c, t)
-   local color = c
-   if (c.blink) then
-      local v = math.min(t * 2, 1)
-      color = util.lerprgb(c.blink, c, v)
-   elseif (color.sin) then
+function util.processcolor(color, dt, t, offset)
+   
+   if (color.sin) then
+      t = love.timer.getTime()
       local v = math.sin(t*6) * 0.5 + 0.5
-      color = util.lerprgb(c.sin, c, v)
-   elseif (c.fsin) then
-      local v = math.sin(t*24) * 0.5 + 0.5
-      color = util.lerprgb(c.fsin, c, v)
+      color = util.lerprgb(color.sin, color, v)
    end
+   if (color.fsin) then
+      local v = math.sin(t*24) * 0.5 + 0.5
+      color = util.lerprgb(color.fsin, color, v)
+   end
+   if (color.ember) then
+      local v = math.sin((t+offset)* 8)*0.5+0.5
+      color = util.lerprgb(color.ember, color, v)
+   end
+   if (color.blink) then
+      local v = math.min(dt * 2, 1)
+      color = util.lerprgb(color.blink, color, v)
+   end
+   
    return color
 end
 

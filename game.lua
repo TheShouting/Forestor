@@ -1,10 +1,9 @@
-require("widget")
+require("util")
 
 game = {}
 
 game.__index = game
 setmetatable(game,{
-   __index = widget.base,
    __call = function (cls, ...)
 			   local self = setmetatable({}, cls)
 			   self:_init(...)
@@ -12,8 +11,11 @@ setmetatable(game,{
    end,
 })
 
-function game:_init(...)
-   widget.base._init(self, ...)
+function game:_init(vx, vy, vw, vh)
+   self.x = vx
+   self.y = vy
+   self.w = vw
+   self.h = vh
 			self.tilew = 30
 			self.tileh = 60
 			self.off = {x = 0, y = 0 }
@@ -62,7 +64,8 @@ function game:draw()
          local wy = y + self.off.y - vh
          local col = world.col(wx, wy)
          
-         col = util.processcolor(col, dt)
+         col = util.processcolor(
+            col, dt, self.timer, wx * wy)
          
          local char = world.char(wx, wy)
          

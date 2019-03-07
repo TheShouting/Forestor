@@ -6,7 +6,8 @@ world.set = {
       puddle = {
          name = "puddle",
          char={" ~ "}, 
-         color={{20, 60, 100}}, 
+         color={{20, 60, 100,
+            ember={30,90,110}}}, 
          move=true,
          see=true,
          effect={wet=3}
@@ -95,7 +96,7 @@ world.set = {
       },
       doorclose = {
          name = "closed door",
-         char = {"|O|"},
+         char = {"|+|"},
          color = {{200, 200, 200}},
          move = false,
          see = false,
@@ -144,6 +145,7 @@ function world.new(width, height)
    world.actor = {}
    world.prop = {}
    world.player = {}
+   world.timer = 0.0
    
    local tkeys = {}
    for k, v in pairs(world.set) do
@@ -161,16 +163,15 @@ function world.new(width, height)
       end
    end
    
-   world.floodview(1, 1, 5)
-   
    world.player = objects.player(100,25)
-   local monster = 
-      objects.actor("A", 100, 10, "monster")
-   monster.right = 
-      objects.prop("P","right","axe",10,"axe")
+   local monster =
+      objects.actor("coward")
+   monster.right = objects.prop(
+      "P","right","axe",10,"axe")
 
    world.insert(world.player, 1, 1)
    world.insert(monster, 5, 3)
+   world.insert(objects.actor(nil), -2, -2)
    
    world.map[4][2].prop = 
       objects.prop("/", "right", "sword")
@@ -178,6 +179,7 @@ function world.new(width, height)
       objects.prop("0", "left", "shield")
       
    world.player.message = "I see forest..."
+   
 end
 
 -- Fill map
@@ -187,6 +189,10 @@ function world.fill(map)
          world.map[x][y].id = map[x][y]
       end
    end
+   
+   world.floodview(
+      world.player.pos.x, world.player.pos.y, 5
+   )
 end
 
 -- Return new position within the map
@@ -267,7 +273,12 @@ function world.mapColor(x, y)
    local color = world.set[cell.id].color
    local c = color[cell.rand %
       #world.set[cell.id].color +1]
-   local col = {c[1], c[2], c[3]}
+      
+   local col = {}
+   for k, v in pairs(c) do
+      col[k] = v
+   end
+   ---local col = {c[1], c[2], c[3]}
    if (not cell.mem) then
       col.blink = {0,0,0}
    end
@@ -330,6 +341,17 @@ function world.shift(obj, x, y)
    end
 end
 
+function world.open(x, y, key)
+   local p = world.pos(x, y)
+   local id = world.map[p.x][p.y].id
+   if key then
+      if world.set[id].key then
+         return world.set[id].key == key
+      end
+   end
+   return world.set[id].move
+end
+
 -- insert actor in world
 function world.insert(obj, x, y)
    local pos = world.pos(x, y)
@@ -342,86 +364,6 @@ function world.insert(obj, x, y)
    else
       return 0
    end
-end
-
--------------------------------------------------
--- Game update method
-function world.update(x, y)
-   
-   world.message = nil
-   
-   world.player:command(x, y)
-   
-   for i, actor in  ipairs(world.actor) do
-      local cell = 
-         world.map[actor.pos.x][actor.pos.y]
-      if (actor.alive) then
-         -- move and update actor
-         local move = actor:update(world)
-         if (move.x == 0 and move.y == 0) then
-            if (cell.prop) then
-               actor.message = "I have "..
-                  cell.prop.name.."!"
-               cell.prop:pickup(actor, world)
-            end
-         else
-            local other = 
-               world.shift(actor, move.x, move.y)
-            if (other) then
-               other:push(actor)
-               actor.message = 
-                  "I hit "..other:getName().."!"
-            end
-         end
-         -- Apply tile effects
-         local ncell = 
-            world.map[actor.pos.x][actor.pos.y]
-         local effect =
-            world.set[ncell.id].effect
-         if (effect) then
-            for e, t in pairs(effect) do
-               actor.effect[e] = t
-            end
-         end
-      else
-         if (actor.rot == 0) then
-            local prop = actor:die(world)
-            if (not cell.prop) then
-               cell.prop = prop
-            end
-            cell.obj = nil
-            world.actor[i] = nil
-         else
-            actor.rot = actor.rot - 1
-         end
-      end
-   end
-   
-   world.flush()
-   
-   world.map[world.player.pos.x]
-      [world.player.pos.y].see = true
-   
-   world.floodview(
-      world.player.pos.x, world.player.pos.y, 5
-   )
-   
-   if not world.message and
-      world.player.effect.hit 
-      then
-      local hm ={
-         "Ouch!", 
-         "Oomf!", 
-         "Ha!", 
-         "Grr!",
-         "Eeow!",
-         "Ow!",
-         "Gaah!"
-         }
-      world.message = hm[love.math.random(#hm)]
-   end
-   
-   
 end
 
 function world.flush()
@@ -526,6 +468,16 @@ end
 
 
 function world.ray(x1, y1, x2, y2)
+
+   local tx = y2 - world.width
+   local ty = y2 - world.height
+   
+   if math.abs(tx - x1) < math.abs(x2 - x1) then
+      x2 = tx
+   end
+   if math.abs(ty - y1) < math.abs(y2 - y1) then
+      y2 = ty
+   end
    
    local delta_x = x2 - x1 
    local ix = delta_x > 0 and 1 or -1 
@@ -578,3 +530,87 @@ function world.ray(x1, y1, x2, y2)
    
    return true
 end
+
+
+-------------------------------------------------
+-- Game update method ---------------------------
+-------------------------------------------------
+function world.update(x, y)
+   
+   world.message = nil
+   
+   --world.player:command(x, y)
+   controller.playerinput = {x=x, y=y}
+   
+   for i, actor in  ipairs(world.actor) do
+      local cell = 
+         world.map[actor.pos.x][actor.pos.y]
+      if (actor.alive) then
+         -- move and update actor
+         local move = actor:update(world)
+         if (move.x == 0 and move.y == 0) then
+            if (cell.prop) then
+               actor.message = "I have "..
+                  cell.prop.name.."!"
+               cell.prop:pickup(actor, world)
+            end
+         else
+            local other = 
+               world.shift(actor, move.x, move.y)
+            if (other) then
+               other:push(actor)
+               actor.message = 
+                  "I hit "..other:getName().."!"
+            end
+         end
+         -- Apply tile effects
+         local ncell = 
+            world.map[actor.pos.x][actor.pos.y]
+         local effect =
+            world.set[ncell.id].effect
+         if (effect) then
+            for e, t in pairs(effect) do
+               actor.effect[e] = t
+            end
+         end
+      else
+         if (actor.rot == 0) then
+            local prop = actor:die(world)
+            if (not cell.prop) then
+               cell.prop = prop
+            end
+            cell.obj = nil
+            world.actor[i] = nil
+         else
+            actor.rot = actor.rot - 1
+         end
+      end
+   end
+   
+   world.flush()
+   
+   world.map[world.player.pos.x]
+      [world.player.pos.y].see = true
+   
+   world.floodview(
+      world.player.pos.x, world.player.pos.y, 5
+   )
+   
+   if not world.message and
+      world.player.effect.hit 
+      then
+      local hm ={
+         "Ouch!", 
+         "Oomf!", 
+         "Ha!", 
+         "Grr!",
+         "Eeow!",
+         "Ow!",
+         "Gaah!"
+         }
+      world.message = hm[love.math.random(#hm)]
+   end
+   
+end
+
+
