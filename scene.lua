@@ -19,7 +19,6 @@ function scene:_init(...)
    
    self.sceneControl = nil
    
-   --self.borders = {255, 0, 0}
 end
 
 function scene:enter() end

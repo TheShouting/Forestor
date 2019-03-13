@@ -1,0 +1,115 @@
+Combat notes:
+
+
+Items are either left-hand, right-hand, or center.
+
+Stats
+strength - amount of damage that can be dealt
+health   - amount of damage that can be recieved
+           before death
+alive    - can the actor think
+brain    - an actors behaviour
+           
+right-hand modifies attacking values
+left-hand modifies defending values
+
+
+value modifiers
+
+
+owner effect modifier (such as wet, on fire, injured, etc.)
+
+patient effect modifier (occurs based on other objects effects)
+
+
+right-hand items
+/   sword  (greater attack)
+P   axe    (chop trees)
+T   pick   (mine rock)
+7   hammer (knock down walls, doors)
+?   club   (stun defender)
+
+left-hand items
+0   shield (reduce damage)
+'   dagger (counterattack)
+{   cloak (reduce environment effects)
+q   small axe (chop tree, regardless of whats in the other hand)
+r   small hammer
+t   small pick
+!   torch (sets attacker on fire)
+o   water globe (wets the attacker)
+
+*   gold (upgrade items)
+=   book (upgrade skill)
+^   key (open locked doors)
+
+item stats
+
+Weight - the strength required to use weapon
+Damage - how much damage it can deal
+Integrity - item is destroyed when this becomes 0
+
+
+weapon effects
+
+WAR         extra damage
+HEIRLOOM    does not degrade
+RUSTY       reduced damage
+POISONED    give poison damage
+TERRIFYING  cause enemies to flee
+POWERFUL    degrade enemy items
+BROKEN      primary effect disabled
+BRITTLE     item degrades faster
+TRAPPED     weapon cannot be unequipped
+INFURIATING causes enemies to be aggressive
+HOOKED      chance for an enemy to drop an item
+
+
+KEY-LOCK PATTERNS FOR MAP GENERATION
+Item containers only locks a single item. This can be a locked chest or a monster that can be looted.
+Location containers prevent access to a location of the map. This location may contain an item or even another container.
+
+
+HARD CONTAINERS
+Hard containers require the key item. Their is no access.
+
+Meadow
+type: location
+Lock: trees
+Key: axe
+
+Locked cottage
+type: location
+Lock: door
+Key: key, hammer
+
+Cavern
+type: location
+Lock: rubble
+Key: pick
+
+Locked Chest
+type: item
+lock: Chest Actor
+key: key
+
+Quest Giver
+type: item
+lock: friendly actor
+key: quest item
+
+
+Soft Locks
+Is still accessable but is very difficult. can be made easier with key item
+
+Monster Lair
+type: location
+Lock: monsters
+key: weapon items
+
+Boss Monster
+type: item
+Lock: monster
+
+
+

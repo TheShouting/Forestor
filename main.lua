@@ -1,22 +1,23 @@
 -- A simple Löve2D roguelike game
 
 require("world")
-require("mapgen")
 require("objects")
 require("controller")
 require("util")
 require("gamescene")
 
+mapgen = require("mapgen")
+
+
 -------------------------------------------------
 -- Main Program ---------------------------------
 -------------------------------------------------
 
-app = {}
+local app = {}
 
 function love.load()
    love.graphics.setNewFont(
-      "FiraCode-Regular.ttf", 48
-   )
+      "FiraCode-Regular.ttf", 48)
    love.graphics.setColor(255,255,255)
    love.graphics.setBackgroundColor(0,0,0)
    

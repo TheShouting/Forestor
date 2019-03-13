@@ -3,6 +3,13 @@
 world = {}
 
 world.set = {
+      path = {
+         name = "path",
+         char={"---", "-=-"}, 
+         color={{70, 60, 60}}, 
+         move=true,
+         see=true
+      },
       puddle = {
          name = "puddle",
          char={" ~ "}, 
@@ -466,6 +473,9 @@ function world.rpath()
    return dir[love.math.random(#dir)]
 end
 
+function world.distsq(x1, y1, x2, y2)
+   --local minx = math.min(x1 - x2, x1 + world.width - x2)
+end
 
 function world.ray(x1, y1, x2, y2)
 
@@ -502,7 +512,6 @@ function world.ray(x1, y1, x2, y2)
          
          local pos = world.pos(x1, y1)
          local cell = world.map[pos.x][pos.y]
-         --cell.see = true
          if (not world.set[cell.id].see) then
             return false
          end
@@ -521,7 +530,6 @@ function world.ray(x1, y1, x2, y2)
          
          local pos = world.pos(x1, y1)
          local cell = world.map[pos.x][pos.y]
-         --cell.see = true
          if (not world.set[cell.id].see) then
             return false
          end

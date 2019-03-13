@@ -10,13 +10,11 @@ controller.coward = function(a, w)
 
    local t = w.player.pos
    local o = a.pos
-   
    if w.ray(o.x, o.y, t.x, t.y) then
       return controller.flee(a, w)
-   else
-      return controller.wander(a, w)
    end
-
+   
+   return controller.wander(a, w)
 end
 
 controller.wander = function(a, w)
@@ -127,4 +125,4 @@ controller.flee = function(a, w)
 end
 
 
-
+--return controller

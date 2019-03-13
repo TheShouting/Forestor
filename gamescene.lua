@@ -1,5 +1,6 @@
 require("scene")
 require("game")
+require("hud")
 
 gamescene = {}
 
@@ -51,6 +52,7 @@ function gamescene:_init()
 			   end}
 
    self.game = game(60, 60, sw-120, sh-120)
+   self.hud = hud(60, sh-60, sw-120, 60)
 
    scene._init(self, z1, z2, z3, z4, z5)
 end
@@ -58,10 +60,12 @@ end
 function gamescene:update(dt)
    self.game.timer = love.timer.getTime()
    self.game:update(dt)
+   self.hud:update(dt)
 
    return scene.update(self, dt)
 end
 
 function gamescene:draw()
    self.game:draw()
+   self.hud:draw()
 end

@@ -1,3 +1,4 @@
+
 objects = {}
 
 
@@ -13,7 +14,7 @@ setmetatable(objects.prop, {
       local self = setmetatable({}, cls)
       self:_init(...)
       return self
-   end,
+   end
 })
 
 function objects.prop:_init(char, hand, name, val, key)
@@ -22,6 +23,12 @@ function objects.prop:_init(char, hand, name, val, key)
    self.name = name
    self.val = val or 10
    self.key = key
+end
+
+function objects.prop:stats()
+
+   return self.name..": "..self.val
+
 end
 
 function objects.prop:pickup(actor, world)
@@ -68,7 +75,8 @@ end
 function objects.actor:attack()
    local a = self.str
    if (self.right) then
-      a = a + self.right:activate(self)
+      self.right:activate(self)
+      a = a + self.right.val
    end
    return a
 end
@@ -78,6 +86,9 @@ function objects.actor:push(other)
 end
 
 function objects.actor:dmg(dmg)
+   if self.left then
+      dmg = dmg - self.left.val
+   end
    self.hp = self.hp - dmg
    if (self.hp <= 0) then
       self.alive = false
@@ -96,18 +107,11 @@ function objects.actor:update(world)
    end
    
    if (self.think) then
-      --return self.think(self, world)
       return controller[self.think](self, world)
    else
       return {x=0, y=0}
    end
 end
-
---[[
-function objects.actor:think(world)
-   return world.rpath()
-end
---]]
 
 function objects.actor:die()
    -- Drop a random item if an actor dies
@@ -173,7 +177,7 @@ function objects.actor:getName()
    return "corpse"
 end
 
--- objects.player class derived from actor --------------
+-- player class derived from actor --------------
 objects.player = {}
 objects.player.__index = objects.player
 setmetatable(objects.player,{

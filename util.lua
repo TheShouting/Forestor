@@ -8,6 +8,9 @@ function util.copy(t)
    return ct
 end
 
+function util.lumin(c)
+   return (c[1]*0.3 + c[2]*0.59 + c[3]*0.11) / 255
+end
 
 function util.lerprgb(a, b, t)
    local r = a[1] + (b[1] - a[1]) * t
@@ -65,6 +68,7 @@ end
 
 function util.drawtile(x, y, char, col, k, l, glow)
    if glow then
+      --local lum = util.lumin(col)
 			   local a = 0.1
 			   love.graphics.setColor(
 			      col[1]*a, col[2]*a, col[3]*a)
