@@ -1,4 +1,4 @@
-hud = {}
+local hud = {}
 
 hud.__index = hud
 setmetatable(hud,{
@@ -15,7 +15,7 @@ function hud:_init(vx, vy, vw, vh, actor)
    self.w = vw
    self.h = vh
    self.timer = 0.0
-   self.actor = actor or world.player
+   self.actor = actor
 end
 
 function hud:update(dt)
@@ -47,7 +47,7 @@ function hud:draw()
    end
 end
 
-
+return hud
 
 
 

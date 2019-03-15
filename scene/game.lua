@@ -1,6 +1,6 @@
 require("util")
 
-game = {}
+local game = {}
 
 game.__index = game
 setmetatable(game,{
@@ -11,7 +11,7 @@ setmetatable(game,{
    end,
 })
 
-function game:_init(vx, vy, vw, vh)
+function game:_init(vx, vy, vw, vh, world)
    self.x = vx
    self.y = vy
    self.w = vw
@@ -20,16 +20,12 @@ function game:_init(vx, vy, vw, vh)
 			self.tileh = 60
 			self.off = {x = 0, y = 0 }
 			self.range = 4
-end
-
-function game:enter() 
-
-   
+			self.world = world
 end
 
 function game:update(dt)
 
-   local pos = world.player.pos
+   local pos = self.world.player.pos
    local dx = math.abs(self.off.x - pos.x)
    local dy = math.abs(self.off.y - pos.y)
    if (dx >= self.range) then
@@ -43,7 +39,7 @@ end
 
 function game:draw()
 
-   local dt = self.timer - world.timer
+   local dt = self.timer - self.world.timer
    
    local tw = self.tilew * 3
    local th = self.tileh
@@ -62,12 +58,12 @@ function game:draw()
          
          local wx = x + self.off.x - vw
          local wy = y + self.off.y - vh
-         local col = world.col(wx, wy)
+         local col = self.world.col(wx, wy)
          
          col = util.processcolor(
             col, dt, self.timer, wx * wy)
          
-         local char = world.char(wx, wy)
+         local char = self.world.char(wx, wy)
          
          local cx = x * tw + self.x - tw + bx
          local cy = y * th + self.y - th + by
@@ -78,4 +74,4 @@ function game:draw()
    end
 end
 
-
+return game

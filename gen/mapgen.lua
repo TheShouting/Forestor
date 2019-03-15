@@ -6,7 +6,7 @@ function mapgen.generate(w, h, seed)
 
    -- My very hacky level generation
    local trees = mapgen.make(w, h, "grass")
-   mapgen.noise(trees, 0.55, "tree")
+   mapgen.noise(trees, 0.65, "tree")
    
    local nx = math.ceil(w * 0.125)
    local ny = math.ceil(h * 0.125)
@@ -21,7 +21,7 @@ function mapgen.generate(w, h, seed)
    mapgen.road(trees, 1, 1, x1, y1, "grass", 2)
    mapgen.road(trees, x1, y1, x2, y2, "grass", 2)
    mapgen.road(trees, x2, y2, x3, y3, "grass", 2)
-   for i=1, 2 do
+   for i=1, 3 do
       mapgen.cellauto(trees, "tree", "grass")
    end
    mapgen.clear(trees, 1, 1, 3, "grass")

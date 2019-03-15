@@ -1,3 +1,5 @@
+local controller = require("game.controller")
+
 
 objects = {}
 
@@ -196,4 +198,4 @@ function objects.player:_init(hp, str)
    self.str = str
 end
 
-
+return objects

@@ -1,3 +1,5 @@
+--local world = require("game.world")
+
 controller = {}
 
 controller.playerinput = {x=0, y=0}
@@ -125,4 +127,4 @@ controller.flee = function(a, w)
 end
 
 
---return controller
+return controller
