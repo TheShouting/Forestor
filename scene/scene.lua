@@ -17,17 +17,17 @@ function scene:_init(...)
       self.widgets[i].owner = self
    end
    
-   self.sceneControl = nil
+   self.newscene = self
    
 end
 
-function scene:input(x, y, time)
+function scene:input(x, y)
 
    for i, w in ipairs(self.widgets) do
       if w.input then
          if (x > w.x and x < w.x + w.w) then
             if (y > w.y and y < w.y + w.h) then
-               w:input(time)
+               w.input(self)
                return
             end
          end
@@ -48,11 +48,7 @@ function scene:updateScene(dt)
       end
    end
 
-   if self.newscene then
-      return self.newscene
-   else
-      return self
-   end
+   return self.newscene
 end
 
 function scene:drawScene()
@@ -66,6 +62,15 @@ function scene:drawScene()
          w:draw()
       end
    end
+   
+   if self.debug then
+      love.graphics.setColor(self.debug)
+      for i, w in pairs(self.widgets) do
+         love.graphics.rectangle("line", 
+            w.x, w.y, w.w, w.h)
+      end
+   end
+   
 end
 
 return scene

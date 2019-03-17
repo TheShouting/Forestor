@@ -6,21 +6,17 @@ function mapgen.generate(w, h, seed)
 
    -- My very hacky level generation
    local trees = mapgen.make(w, h, "grass")
-   mapgen.noise(trees, 0.65, "tree")
+   mapgen.noise(trees, 0.7, "tree")
    
-   local nx = math.ceil(w * 0.125)
-   local ny = math.ceil(h * 0.125)
-   local nw = math.ceil(w * 0.25)
-   local nh = math.ceil(h * 0.25)
-   local x1 = love.math.random(nw) - nx
-   local y1 = love.math.random(nh) - ny
-   local x2 = x1 + love.math.random(nw) - nx
-   local y2 = y1 + love.math.random(nh) - ny
-   local x3 = x2 + love.math.random(nw) - nx
-   local y3 = y2 + love.math.random(nh) - ny
+   local nx = math.ceil(w * 0.5)
+   local ny = math.ceil(h * 0.5)
+   local x1 = love.math.random(w) - nx
+   local y1 = love.math.random(h) - ny
+   local x2 = x1 + love.math.random(w) - nx
+   local y2 = y1 + love.math.random(h) - ny
    mapgen.road(trees, 1, 1, x1, y1, "grass", 2)
    mapgen.road(trees, x1, y1, x2, y2, "grass", 2)
-   mapgen.road(trees, x2, y2, x3, y3, "grass", 2)
+   mapgen.road(trees, x2, y2, 1, 1, "grass", 2)
    for i=1, 3 do
       mapgen.cellauto(trees, "tree", "grass")
    end
@@ -43,7 +39,7 @@ function mapgen.generate(w, h, seed)
    
    mapgen.road(map, 1, 1, x1, y1, "path", 1)
    mapgen.road(map, x1, y1, x2, y2, "path", 1)
-   mapgen.road(map, x2, y2, x3, y3, "path", 1)
+   mapgen.road(map, x2, y2, 1, 1, "path", 1)
    
    local room = mapgen.room(3, 3, "wall", "dirt", "doorclose")
    

@@ -1,10 +1,7 @@
-require("widget")
+local button = {}
 
-menu = {}
-
-menu.__index = menu
-setmetatable(menu, {
-   __index = widget.base,
+button.__index = button
+setmetatable(button, {
    __call = function (cls, ...)
       local self = setmetatable({}, cls)
       self:_init(...)
@@ -12,14 +9,18 @@ setmetatable(menu, {
    end,
 })
 
-function menu:_init(text, ...)
-   widget.base._init(self, ...)
+function button:_init(text, press, x, y, w, h)
+   self.x = x or 0
+   self.y = y or 0
+   self.w = w or 400
+   self.h = h or 100
    self.text = text
+   self.input = press
    self.color = {255, 255, 255}
 end
 
 
-function menu:draw()
+function button:draw()
 
    love.graphics.setColor(self.color)
    love.graphics.rectangle("line", 
@@ -36,3 +37,4 @@ function menu:draw()
 
 end
 
+return button

@@ -1,8 +1,8 @@
 local controller = require("game.controller")
+local set = require("data.objectset")
 
 
-objects = {}
-
+local objects = {}
 
 -------------------------------------------------
 --- Class Definitions
@@ -19,12 +19,20 @@ setmetatable(objects.prop, {
    end
 })
 
-function objects.prop:_init(char, hand, name, val, key)
-   self.char = char
-   self.hand = hand
-   self.name = name
-   self.val = val or 10
-   self.key = key
+function objects.prop:_init(id)
+
+   if set.props[id] then
+      for k, v in pairs(set.props[id]) do
+         self[k] = v
+      end
+   else
+			   self.char = "x"
+			   self.hand = "right"
+			   self.name = "empty"
+			   self.val = 1
+			   self.image = 0
+			   self.thumb = 0
+   end
 end
 
 function objects.prop:stats()
@@ -62,14 +70,23 @@ setmetatable(objects.actor, {
    end,
 })
 
-function objects.actor:_init(brain, char, name)
-   self.think = brain
-   self.head = char or "a"
-   self.name = name or "actor"
+function objects.actor:_init(id)
+
+   if set.actors[id] then
+      for k, v in pairs(set.actors[id]) do
+         self[k] = v
+      end
+   else
+			   self.think = nil
+			   self.character = "x"
+			   self.img = 3
+			   self.name = "null actor"
+			   self.hp = 100
+			   self.str = 0
+   end
+   
    self.alive = true
    self.rot = 1
-   self.hp = 100
-   self.str = 10
    self.pos = {x=0, y=0}
    self.effect = {}
 end
@@ -132,11 +149,18 @@ function objects.actor:die()
 end
 
 
-function objects.actor:key()
+function objects.actor:haskey(key)
    if (self.right) then
-      return self.right.key
+      if self.right.key == key then
+         return true
+      end
    end
-   return nil
+   if (self.left) then
+      if self.left.key == key then
+         return true
+      end
+   end
+   return false
 end
 
 
@@ -152,7 +176,7 @@ function objects.actor:char()
       r = self.right.char
    end
    
-   return l..self.head..r
+   return l..self.character..r
 end
 
 function objects.actor:col()
@@ -170,6 +194,21 @@ function objects.actor:col()
       
    end
    return color
+end
+
+function objects.actor:sprite()
+   local l = 0
+   local r = 0
+   
+   if self.left then
+      l = self.left.img or 0
+   end
+   
+   if self.right then
+      r = self.right.img or 0
+   end
+   
+   return {r, self.img, l}
 end
 
 function objects.actor:getName()
@@ -192,10 +231,7 @@ setmetatable(objects.player,{
 })
 
 function objects.player:_init(hp, str)
-   objects.actor._init(
-      self, "player", "@", "me")
-   self.hp = hp
-   self.str = str
+   objects.actor._init(self, "player")
 end
 
 return objects

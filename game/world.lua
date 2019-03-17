@@ -33,19 +33,14 @@ function world.new(width, height)
    end
    
    world.player = objects.player(100,25)
-   local monster =
-      objects.actor("coward")
-   monster.right = objects.prop(
-      "P","right","axe",10,"axe")
+   local monster = objects.actor("goblin")
+   monster.right = objects.prop("axe")
 
    world.insert(world.player, 1, 1)
    world.insert(monster, 5, 3)
-   world.insert(objects.actor(nil), -2, -2)
    
-   world.map[4][2].prop = 
-      objects.prop("/", "right", "sword")
-   world.map[2][5].prop = 
-      objects.prop("0", "left", "shield")
+   world.map[4][2].prop = objects.prop("sword")
+   world.map[2][5].prop = objects.prop("shield")
       
    world.player.message = "I see forest..."
    
@@ -129,6 +124,43 @@ function world.col(x, y)
    return {0,0,0}
 end
 
+function world.image(x, y)
+   local pos = world.pos(x, y)
+   local cell = world.map[pos.x][pos.y]
+   if (cell.see) then
+      if (cell.obj) then
+         --return cell.obj:char()
+         return {0, 1, 0}
+      else
+         if (cell.prop) then
+            return {0, 1, 0}
+         else
+            local c = 
+               cell.rand %
+                  #world.set[cell.id].img
+            return world.set[cell.id].img[c + 1]
+         end
+      end
+   else
+      return {0, 0, 0}
+   end
+end
+
+function world.objImage(x, y)
+   local pos = world.pos(x, y)
+   local cell = world.map[pos.x][pos.y]
+   if (cell.see) then
+      if (cell.obj) then
+         return cell.obj:sprite()
+      else
+         if (cell.prop) then
+            return {0, cell.prop.thumb, 0}
+         end
+      end
+   end
+   return nil
+end
+
 function world.getActor(x, y)
 
    local p = world.pos(x, y)
@@ -191,8 +223,8 @@ function world.shift(obj, x, y)
    
    if (world.set[cell.id].hit) then
       local k = world.set[id].key
-      if (k) then
-         if (k == obj:key()) then
+      if k then
+         if obj:haskey(k) then
             cell.id = world.set[cell.id].hit
          else
             obj.message = "I need "..k.."!"

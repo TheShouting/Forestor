@@ -28,8 +28,7 @@ controller.wander = function(a, w)
       {x=0,y=-1}
    }
    for i, d in pairs(dir) do
-      if not w.open(
-         a.pos.x + d.x, a.pos.y + d.y, a:key())
+      if not w.open(a.pos.x + d.x, a.pos.y + d.y)
       then
          table.remove(dir, i)
       end
@@ -109,7 +108,7 @@ controller.flee = function(a, w)
    local dist = 0
    for i = 1, #s4 do
       local s = w.pos(ox + s4[i].x, oy + s4[i].y)
-      if w.open(s.x, s.y, a:key()) then
+      if w.open(s.x, s.y) then -- check for key
          local dx = math.min(
             math.abs(tx - s.x), 
             math.abs(tx - s.x - w.width))
