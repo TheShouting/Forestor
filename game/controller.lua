@@ -2,10 +2,10 @@
 
 controller = {}
 
-controller.playerinput = {x=0, y=0}
-
 controller.player = function(a, w)
-   return controller.playerinput
+   local input = controller.playerinput
+   controller.playerinput = nil
+   return input
 end
 
 controller.coward = function(a, w)
@@ -28,8 +28,13 @@ controller.wander = function(a, w)
       {x=0,y=-1}
    }
    for i, d in pairs(dir) do
-      if not w.open(a.pos.x + d.x, a.pos.y + d.y)
-      then
+      local sx = a.pos.x + d.x
+      local sy = a.pos.y + d.y
+      
+      local open = w.open(sx, sy)
+      local key = a:haskey(w.key(sx, sy))
+      
+      if not open or (not open and not key) then 
          table.remove(dir, i)
       end
    end
@@ -44,7 +49,7 @@ controller.drunk = function(a, w)
    local dir = {
       {x=0,y=0},
       {x=1,y=0},
-      {x=0,y=0},
+      {x=0,y=1},
       {x=-1,y=0},
       {x=0,y=-1}
    }
@@ -74,8 +79,13 @@ controller.seek = function(a, w)
    local dist =
       w.width * w.width + w.height * w.height
    for i = 1, #s4 do
-      local s = w.pos(ox + s4[i].x, oy + s4[i].y)
-      if w.open(s.x, s.y, a:key()) then
+      local sx = ox + s4[i].x
+      local sy = oy + s4[i].y
+      
+      local open = w.open(sx, sy)
+      local key = a:haskey(w.key(sx, sy))
+      
+      if open or (not open and key) then
          local dx = math.min(
             math.abs(tx - s.x), 
             math.abs(tx - s.x - w.width))
@@ -107,14 +117,19 @@ controller.flee = function(a, w)
    local npath = {x=0, y=0}
    local dist = 0
    for i = 1, #s4 do
-      local s = w.pos(ox + s4[i].x, oy + s4[i].y)
-      if w.open(s.x, s.y) then -- check for key
+      local sx = ox + s4[i].x
+      local sy = oy + s4[i].y
+      
+      local open = w.open(sx, sy)
+      local key = a:haskey(w.key(sx, sy))
+      
+      if open or (not open and key) then
          local dx = math.min(
-            math.abs(tx - s.x), 
-            math.abs(tx - s.x - w.width))
+            math.abs(tx - sx), 
+            math.abs(tx - sx - w.width))
          local dy = math.min(
-            math.abs(ty - s.y), 
-            math.abs(ty - s.y - w.height))
+            math.abs(ty - sy), 
+            math.abs(ty - sy - w.height))
          if (dx*dx + dy*dy > dist) then
             dist = dx*dx + dy*dy
             npath = s4[i]

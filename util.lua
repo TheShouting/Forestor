@@ -1,4 +1,4 @@
-util = {}
+local util = {}
 
 function util.copy(t)
    local ct = {}
@@ -20,27 +20,34 @@ function util.lerprgb(a, b, t)
 end
 
 
-function util.processcolor(color, dt, t, offset)
+function util.processcolor(color, t, offset)
    
+   local ncol = color
+   if (color.ember) then
+      local v = math.sin((t+offset)* 8)*0.5+0.5
+      ncol = util.lerprgb(color.ember, ncol, v)
+   end
    if (color.sin) then
       t = love.timer.getTime()
       local v = math.sin(t*6) * 0.5 + 0.5
-      color = util.lerprgb(color.sin, color, v)
+      ncol = util.lerprgb(color.sin, ncol, v)
    end
    if (color.fsin) then
       local v = math.sin(t*24) * 0.5 + 0.5
-      color = util.lerprgb(color.fsin, color, v)
-   end
-   if (color.ember) then
-      local v = math.sin((t+offset)* 8)*0.5+0.5
-      color = util.lerprgb(color.ember, color, v)
+      ncol = util.lerprgb(color.fsin, ncol, v)
    end
    if (color.blink) then
+      local dt = t - color.time
       local v = math.min(dt * 2, 1)
-      color = util.lerprgb(color.blink, color, v)
+      ncol = util.lerprgb(color.blink, ncol, v)
+   end
+   if (color.fade) then
+      local dt = t - color.time
+      local v = math.min(dt * 0.5, 1)
+      ncol = util.lerprgb(color.fade, ncol, v)
    end
    
-   return color
+   return ncol
 end
 
 
@@ -93,3 +100,25 @@ function util.drawtile(x, y, char, col, k, l, glow)
       love.graphics.print(char:sub(i,i), cx, y)
    end
 end
+
+
+function util.drawglow(c, x, y, w, h)
+   local lum = util.lumin(c)
+		 local a = 48
+		 love.graphics.setColor(c[1], c[2], c[3], a)
+		 --love.graphics.rectangle("fill", x, y, w, h)
+			--a=0.2
+			love.graphics.setColor(c[1], c[2], c[3], a)
+		 love.graphics.ellipse(
+			   "fill", x+w*0.5, y+h*0.5, w*0.5, h*0.5)
+			--a=0.35
+		 love.graphics.setColor(c[1], c[2], c[3], a)
+		 love.graphics.ellipse(
+			   "fill", x+w*0.5, y+h*0.5, w*0.33, h*0.33)
+         
+   love.graphics.setColor(c)
+         
+end
+
+
+return util

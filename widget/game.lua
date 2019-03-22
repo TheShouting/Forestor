@@ -1,4 +1,4 @@
-require("util")
+local util = require("util")
 
 local tileset = require("assets.tileset")
 
@@ -21,14 +21,13 @@ function game:_init(vx, vy, vw, vh, world)
 			--self.tilew = 30
 			--self.tileh = 60
 			
-			self.off = {x = 0, y = 0 }
+			self.off = {x = 1, y = 1 }
 			self.range = 4
 			self.world = world
-			self.timer = 0
 			
-			self.tilew = 16
-			self.tileh = 32
-			self.scale = 2
+			self.tilew = 8
+			self.tileh = 16
+			self.scale = 4
 			
 			self.ground = tileset:load(
 			   "ground", self.tilew, self.tileh)
@@ -52,7 +51,7 @@ end
 
 function game:draw()
 
-   local dt = self.timer - self.world.timer
+   local timer = love.timer.getTime()
    
    local tw = self.tilew * 3 * self.scale
    local th = self.tileh * self.scale
@@ -71,38 +70,52 @@ function game:draw()
          
          local wx = x + self.off.x - vw
          local wy = y + self.off.y - vh
-         local col = self.world.col(wx, wy)
-         
-         col = util.processcolor(
-            col, dt, self.timer, wx * wy)
-         
          --local char = self.world.char(wx, wy)
          
          local cx = x * tw + self.x - tw + bx
          local cy = y * th + self.y - th + by
-        
-         --util.drawtile(
-         --   cx, cy, char, col, tw / 3, th, true)
          
+         local o = wx * wy *
+            (self.world.random(wx, wy) / 100)
+         
+         local t = self.world.image(wx, wy)
+         
+         local col = self.world.mapColor(wx, wy)
+         col = util.processcolor(col, timer, o)
          love.graphics.setColor(col)
-         
-         local t = self.world.objImage(wx, wy)
-         local set = self.objects
-         
-         if not t then
-            t = self.world.image(wx, wy)
-            set = self.ground
-         end
-         
          for i = 1, 3 do
             if t[i] > 0 then
                love.graphics.draw(
-                  set.img, 
-                  set.tile[t[i]],
+                  self.ground.img, 
+                  self.ground.tile[t[i]],
                   cx + (i - 1)* (tw / 3), cy, 0, 
                   self.scale, self.scale, 0, 0)
             end
          end
+         
+         util.drawglow(col, cx, cy, tw, th)
+         
+         t = self.world.objImage(wx, wy)
+         
+         if t then
+			         col = self.world.objColor(wx, wy)
+			         col = 
+			            util.processcolor(col, timer, o)
+			         love.graphics.setColor(col)
+         
+			         for i = 1, 3 do
+			            if t[i] > 0 then
+			               love.graphics.draw(
+			                  self.objects.img, 
+			                  self.objects.tile[t[i]],
+			                  cx + (i - 1)* (tw / 3), cy, 
+			                  0, 
+			                  self.scale, self.scale, 
+			                  0, 0)
+			            end
+			         end
+         end
+         
          
       end
    end

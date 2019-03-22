@@ -6,19 +6,36 @@ player = {
    name = "the player",
    character = "@",
    think = "player",
-   img = 1,
+   color = {255, 255, 255},
+   img = 2,
    hp = 100,
    str = 20
    },
 goblin = {
    name = "a goblin",
    character = "a",
-   think = "coward",
-   img = 2,
+   think = "drunk",
+   color = {255, 255, 255},
+   img = 3,
    hp = 80,
    str = 20
+   },
+table = {
+   name = "a table",
+   character = "[ ]",
+   color = {255, 255, 255},
+   imgr = 30,
+   img = 31,
+   imgl = 32
+   },
+portal = {
+   name = "a touchstone",
+   character = "$",
+   color = {255, 128, 255, ember={255, 255, 255}},
+   img = 8,
    }
 }
+
 
 objectset.props = {
 

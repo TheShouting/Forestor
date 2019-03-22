@@ -1,53 +1,6 @@
---module("mymath", package.seeall)
+local tools = {}
 
-local mapgen = {}
-
-function mapgen.generate(w, h, seed)
-
-   -- My very hacky level generation
-   local trees = mapgen.make(w, h, "grass")
-   mapgen.noise(trees, 0.7, "tree")
-   
-   local nx = math.ceil(w * 0.5)
-   local ny = math.ceil(h * 0.5)
-   local x1 = love.math.random(w) - nx
-   local y1 = love.math.random(h) - ny
-   local x2 = x1 + love.math.random(w) - nx
-   local y2 = y1 + love.math.random(h) - ny
-   mapgen.road(trees, 1, 1, x1, y1, "grass", 2)
-   mapgen.road(trees, x1, y1, x2, y2, "grass", 2)
-   mapgen.road(trees, x2, y2, 1, 1, "grass", 2)
-   for i=1, 3 do
-      mapgen.cellauto(trees, "tree", "grass")
-   end
-   mapgen.clear(trees, 1, 1, 3, "grass")
-   
-   local ground = mapgen.make(w, h, "dirt")
-   mapgen.noise(ground, 0.35, "tallgrass")
-   for i=1, 3 do
-      mapgen.cellauto(
-         ground, "tallgrass", "dirt")
-   end
-   mapgen.apply(ground, trees, 1, 1, "grass")
-   
-   local map = mapgen.make(w, h, "dirt")
-   mapgen.noise(map, 0.65, "grass")
-   for i=1, 2 do
-      mapgen.cellauto(map, "grass", "dirt")
-   end
-   mapgen.apply(map, ground, 1, 1, "dirt")
-   
-   mapgen.road(map, 1, 1, x1, y1, "path", 1)
-   mapgen.road(map, x1, y1, x2, y2, "path", 1)
-   mapgen.road(map, x2, y2, 1, 1, "path", 1)
-   
-   local room = mapgen.room(3, 3, "wall", "dirt", "doorclose")
-   
-   mapgen.apply(map, room, -8, -8)
-   return map
-end
-
-function mapgen.make(w, h, fill)
+local make = function(w, h, fill)
 
    local map = {w=w, h=h}
 
@@ -61,12 +14,12 @@ function mapgen.make(w, h, fill)
    return map
 end
 
-function mapgen.cellauto(map, a, b)
+local cellauto = function(map, a, b)
 
    s8 = {{1,0}, {1,1}, {0,1}, {-1,1},
         {-1,0},{-1,-1},{0, -1},{1, -1}}
 
-   local nmap = mapgen.make(map.w, map.h, b)
+   local nmap = make(map.w, map.h, b)
    for x=1, map.w do
       for y=1, map.h do
          local n = 0
@@ -99,7 +52,7 @@ function mapgen.cellauto(map, a, b)
    return map
 end
 
-function mapgen.clear(m, cx, cy, size, c)
+local clear = function(m, cx, cy, size, c)
 
    local radius = math.ceil(size)
 
@@ -117,7 +70,7 @@ function mapgen.clear(m, cx, cy, size, c)
 
 end
 
-function mapgen.clearrect(map, x, y, r, c)
+local clearrect = function(map, x, y, r, c)
 
    local r1 = math.floor(r*0.5 + 0.5)
    local r2 = math.ceil(r*0.5 - 0.5) - 1
@@ -133,7 +86,7 @@ function mapgen.clearrect(map, x, y, r, c)
 
 end
 
-function mapgen.apply(map, stamp, sx, sy, a)
+local apply = function(map, stamp, sx, sy, a)
 
    for x = 1, stamp.w do
       for y = 1, stamp.h do
@@ -149,10 +102,10 @@ function mapgen.apply(map, stamp, sx, sy, a)
 end
 
 
-function mapgen.noise(map, n, a)
+local noise = function(map, n, a, rng)
    for x=1, map.w do
       for y=1, map.h do
-         if (love.math.random() < n) then
+         if (rng:random() < n) then
             map[x][y] = a
          end
       end
@@ -161,11 +114,11 @@ function mapgen.noise(map, n, a)
 end
 
 
-function mapgen.room(w, h, wall, floor, door)
+local room = function(w, h, wall, floor, door, rng)
 
    floor = floor or "blank"
 
-   local map = mapgen.make(w+2, h+2, floor)
+   local map = make(w+2, h+2, floor)
 
    for x = 1, w+2 do
       for y = 1, h+2 do
@@ -180,13 +133,13 @@ function mapgen.room(w, h, wall, floor, door)
       door = floor
    end
    
-   local side = love.math.random(2) - 1
+   local side = rng:random(2) - 1
    if love.math.random() < 0.5 then
       local dx = (w + 1) * side + 1
-      local dy = love.math.random(h) + 1
+      local dy = rng:random(h) + 1
       map[dx][dy] = door
    else
-      local dx = love.math.random(w) + 1
+      local dx = rng:random(w) + 1
       local dy = (h + 1) * side + 1
       map[dx][dy] = door
    end
@@ -195,7 +148,7 @@ function mapgen.room(w, h, wall, floor, door)
 
 end
 
-function mapgen.line(map, x1, y1, x2, y2, cell)
+local line = function(map, x1, y1, x2, y2, cell)
 
    local tx = y2 - map.w
    local ty = y2 - map.h
@@ -257,7 +210,7 @@ function mapgen.line(map, x1, y1, x2, y2, cell)
 end
 
 
-function mapgen.road(map, x1, y1, x2, y2, r, t)
+local road = function(map, x1, y1, x2, y2, r)
 
    local tx = y2 - map.w
    local ty = y2 - map.h
@@ -269,52 +222,48 @@ function mapgen.road(map, x1, y1, x2, y2, r, t)
       y2 = ty
    end
    
-   local delta_x = x2 - x1 
-   local ix = delta_x > 0 and 1 or -1 
-   delta_x = 2 * math.abs(delta_x)
+   local s4 = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}}
    
-   local delta_y = y2 - y1 
-   local iy = delta_y > 0 and 1 or -1 
-   delta_y = 2 * math.abs(delta_y)
+   local px = (x1 + map.w - 1) % map.w + 1
+   local py = (y1 + map.h - 1) % map.h + 1
+   map[px][py] = r
    
-   mapgen.clearrect(map, x1, y1, t, r)
+   while (x1 ~= x2 and y1 ~= y2) do
    
-   if delta_x >= delta_y then
-      local err = delta_y - delta_x / 2
+      local low = map.w*map.w + map.h*map.h
+      local nx = x1
+      local ny = y1
       
-      while (math.abs(x1-x2) > 1) do
-         if ((err > 0) or (err == 0 and ix > 0))
-         then
-            err = err - delta_x
-            y1 = y1 + iy
+      for i, s in pairs(s4) do
+         local dx = (x1 - x2 + s[1])
+         local dy = (y1 - y2 + s[2])
+         local d = dx*dx + dy*dy
+         if (d < low) then
+            low = d
+            nx = x1 + s[1]
+            ny = y1 + s[2]
          end
-         
-         err = err + delta_y
-         x1 = x1 + ix
-         
-         mapgen.clearrect(map, x1, y1, t, r)
       end
-   else
-      local err = delta_x - delta_y / 2
-      
-      while math.abs(y1 - y2) > 1 do
-         if ((err > 0) or (err == 0 and iy > 0))
-         then
-            err = err - delta_y
-            x1 = x1 + ix
-         end
-         err = err + delta_x
-         y1 = y1 + iy
-         
-         mapgen.clearrect(map, x1, y1, t, r)
-      end
+      x1 = nx
+      y1 = ny
+   
+      local px = (x1 + map.w - 1) % map.w + 1
+      local py = (y1 + map.h - 1) % map.h + 1
+      map[px][py] = r
    end
+   
 end
 
+tools = {
+   make = make,
+   cellauto = cellauto,
+   clear = clear,
+   clearrect = clearrect,
+   apply = apply,
+   noise = noise,
+   room = room,
+   line = line,
+   road = road
+   }
 
-   
-return mapgen
-
-
-
-
+return tools

@@ -30,9 +30,14 @@ function objects.prop:_init(id)
 			   self.hand = "right"
 			   self.name = "empty"
 			   self.val = 1
-			   self.image = 0
+			   self.color = {255, 255, 255}
+			   self.img = 1
 			   self.thumb = 0
    end
+end
+
+function objects.prop:color()
+   return {255, 255, 255, sin={128, 128, 128}}
 end
 
 function objects.prop:stats()
@@ -41,15 +46,8 @@ function objects.prop:stats()
 
 end
 
-function objects.prop:pickup(actor, world)
-   local cell = 
-      world.map[actor.pos.x][actor.pos.y]
-   if (actor[self.hand]) then
-      cell.prop = actor[self.hand]
-   else
-      cell.prop = nil
-   end
-   actor[self.hand] = self
+function objects.prop:onpickup(actor, world)
+   return true
 end
 
 function objects.prop:activate(owner)
@@ -79,7 +77,7 @@ function objects.actor:_init(id)
    else
 			   self.think = nil
 			   self.character = "x"
-			   self.img = 3
+			   self.img = 1
 			   self.name = "null actor"
 			   self.hp = 100
 			   self.str = 0
@@ -89,6 +87,23 @@ function objects.actor:_init(id)
    self.rot = 1
    self.pos = {x=0, y=0}
    self.effect = {}
+   self.time = 0
+end
+
+function objects.actor:pickup(cell)
+   local prop = cell.prop
+   if prop then
+			   if (self[prop.hand]) then
+			      cell.prop = self[prop.hand]
+			   else
+			      cell.prop = nil
+			   end
+			   self[prop.hand] = prop
+			   
+			   self.message = "I have "..prop.name.."!"
+			else
+			   self.message = "There's nothing there."
+   end
 end
 
 function objects.actor:attack()
@@ -150,17 +165,20 @@ end
 
 
 function objects.actor:haskey(key)
-   if (self.right) then
-      if self.right.key == key then
-         return true
-      end
-   end
-   if (self.left) then
-      if self.left.key == key then
-         return true
-      end
-   end
-   return false
+   if key then
+			   if (self.right) then
+			      if self.right.key == key then
+			         return true
+			      end
+			   end
+			   if (self.left) then
+			      if self.left.key == key then
+			         return true
+			      end
+			   end
+			   return false
+			end
+   return true
 end
 
 
@@ -182,10 +200,12 @@ end
 function objects.actor:col()
    local color = {196,0,0}
    if (self.alive) then
-      color ={255, 255, 255}
+      for k, v in pairs(self.color) do
+         color[k] = v
+      end
       
       if (self.effect.wet) then
-         color = {64, 196, 255}
+         color.sin = {64, 196, 255}
       end
       
       if (self.effect.hit) then
@@ -193,6 +213,7 @@ function objects.actor:col()
       end
       
    end
+   color.time = self.time
    return color
 end
 
@@ -232,6 +253,125 @@ setmetatable(objects.player,{
 
 function objects.player:_init(hp, str)
    objects.actor._init(self, "player")
+   self.rot = -1
 end
+
+
+function objects.player:update(world)
+   if controller.playerinput then
+      return objects.actor.update(self, world)
+   end
+   return nil
+end
+
+objects.dummy = {}
+objects.dummy.__index = objects.dummy
+setmetatable(objects.dummy, {
+   __call = function (cls, ...)
+      local self = setmetatable({}, cls)
+      self:_init(...)
+      return self
+   end
+})
+
+function objects.dummy:_init(id, action)
+   if set.actors[id] then
+      for k, v in pairs(set.actors[id]) do
+         self[k] = v
+      end
+   else
+      self.color = {255, 255, 255}
+			   self.character = "x"
+			   self.img = 1
+			   self.name = "dummy object"
+   end
+   
+   self.alive = false
+   self.rot = -1
+   self.pos = {x=0, y=0}
+   self.time = 0
+   
+   self.action = action
+end
+
+function objects.dummy:push(other)
+   -- empty method
+   if self.action then
+      self.action(other)
+   end
+   
+end
+
+function objects.dummy:col()
+   local color = {}
+   for k, v in pairs(self.color) do
+      color[k] = v
+   end
+   color.blink = {255, 255, 255}
+   color.time = self.time
+   return color
+end
+
+function objects.dummy:char()
+   return " "..self.character.." "
+end
+
+function objects.dummy:sprite()
+   return {
+      self.imgr or 0, 
+      self.img, 
+      self.imgl or 0
+      }
+end
+
+-- player class derived from actor --------------
+objects.container = {}
+objects.container.__index = objects.container
+setmetatable(objects.container,{
+   __index = objects.dummy,
+   __call = function (cls, ...)
+   local self = setmetatable({}, cls)
+   self:_init(...)
+   return self
+   end,
+})
+
+
+function objects.container:_init(prop)
+   objects.dummy._init(self, "table")
+   
+   if prop then
+      self.hand = prop.hand
+      self.prop = prop
+   else
+      self.hand = "right"
+   end
+
+end
+
+function objects.container:col()
+   if self.prop then
+      return self.prop:color()
+   else
+      local c = objects.dummy:col(self)
+      c.time = self.time
+      return c
+   end
+end
+
+function objects.container:sprite()
+   local spr = objects.dummy.sprite(self)
+   if self.prop then
+      spr[2] = self.prop.thumb
+   end
+   return spr
+end
+
+function objects.container:push(other)
+   local prop = other[self.hand]
+   other[self.hand] = self.prop
+   self.prop = prop
+end
+
 
 return objects

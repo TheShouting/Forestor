@@ -3,9 +3,11 @@ local gamescene = require("scene.gamescene")
 local button = require("widget.button")
 
 local world = require("game.world")
-local mapgen = require("gen.mapgen")
+local generate = require("gen.generate")
 
 local tileset = require("assets.tileset")
+
+local util = require("util")
 
 local menuscene = {}
 
@@ -30,22 +32,22 @@ function menuscene:_init()
       love.graphics.newImage(
       'assets/img/title.png')
       
-   self.set = tileset:load("ground", 16, 32)
+   self.set = tileset:load("ground", 8, 16)
 
 end
 
 function menuscene:draw()
 
    local t = 
-      {2, 3, 4, 2, 3, 2, 2, 2, 2, 3, 2, 
-      5, 6, 7,
-      2, 4, 3, 2, 2, 2, 3, 2, 2, 3, 4}
+      {2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 
+      3, 4, 3,
+      2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2}
    love.graphics.setColor(255, 255, 255)
    for i = 1, #t do
       love.graphics.draw(
          self.set.img, 
          self.set.tile[t[i]],
-         50 + (i * 64), 50, 0, 4, 4, 0, 0)
+         50 + (i * 64), 50, 0, 8, 8, 0, 0)
    end
 
    local v = 
@@ -60,10 +62,8 @@ function menuscene:draw()
 end
 
 function menuscene:newgame()
-   world.new(150, 150)
-   local map = mapgen.generate(150, 150, 0)
-   world.fill(map)
-   
+   world.new(100, 100)
+   world.generate()
    self.newscene = gamescene(world)
 end
 

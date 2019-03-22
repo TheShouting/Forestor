@@ -1,5 +1,7 @@
 -- World handler
 
+
+local generate = require("gen.generate")
 local objects = require("game.objects")
 local mapset = require("data.mapset")
 
@@ -14,7 +16,17 @@ function world.new(width, height)
    world.actor = {}
    world.prop = {}
    world.player = {}
-   world.timer = 0.0
+   world.time = 0
+   
+   world.level = 1
+   world.seed = 0
+   
+   world.view = 4
+   world.i = 1
+   
+   world.transition = -1
+   world.transitiontime = 0
+   world.transitionmethod = world.generate
    
    local tkeys = {}
    for k, v in pairs(world.set) do
@@ -25,39 +37,54 @@ function world.new(width, height)
       world.map[x] = {}
       for y=1, world.height do
          world.map[x][y] = {
-            id = "dirt",
-            rand = love.math.random(0, 99),
-            see = false
+            id = "blank",
+            rand = 0,
+            see = false,
+            time = 0,
+            state = ""
          }
       end
    end
    
    world.player = objects.player(100,25)
-   local monster = objects.actor("goblin")
-   monster.right = objects.prop("axe")
-
    world.insert(world.player, 1, 1)
-   world.insert(monster, 5, 3)
-   
-   world.map[4][2].prop = objects.prop("sword")
-   world.map[2][5].prop = objects.prop("shield")
-      
-   world.player.message = "I see forest..."
    
 end
 
--- Fill map
-function world.fill(map)
-   for x=1, map.w do
-      for y=1, map.h do
-         world.map[x][y].id = map[x][y]
-      end
+function world.generate()
+
+   for i=#world.actor, 2, -1 do
+      local actor = world.actor[i]
+      local cell = 
+         world.map[actor.pos.x][actor.pos.y]
+      cell.obj = nil
+      world.actor[i] = nil
+   end
+
+   generate.run(world)
+   
+   world.move(world.player, 1, 1)
+   
+   --world.flush()
+   world.floodview(1, 1, world.view)
+   world.player.message = "I see forest..."
+end
+
+function world.nextlevel(instigator)
+
+   if instigator == world.player then
+
+      world.level = world.level + 1
+      world.transition = 50
+      world.transitionmethod = world.generate
    end
    
-   world.floodview(
-      world.player.pos.x, world.player.pos.y, 5
-   )
 end
+
+function world.load(file)
+
+end
+
 
 -- Return new position within the map
 function world.pos(px, py)
@@ -99,8 +126,8 @@ function world.name(x, y)
    end
 end
 
--- Get display color for specified position
-function world.col(x, y)
+-- Get object color for specified position
+function world.objColor(x, y)
    local pos = world.pos(x, y)
    local cell = world.map[pos.x][pos.y]
    if (cell.see) then
@@ -110,13 +137,7 @@ function world.col(x, y)
 			      if (cell.prop) then
 			         local col={200, 200, 200}
 			         col.sin = {100,100,100}
-			         return col
-			      else
-			         local col = 
-			            world.mapColor(pos.x, pos.y)
-			         if (cell.hitdelay) then
-			            col.blink ={255,255,255}
-			         end
+			         col.time = cell.time
 			         return col
 			      end
 			   end
@@ -124,23 +145,38 @@ function world.col(x, y)
    return {0,0,0}
 end
 
+-- Get map color for specified position
+function world.mapColor(x, y)
+   local pos = world.pos(x, y)
+   local cell = world.map[pos.x][pos.y]
+   
+   if cell.see then
+			   local color = world.set[cell.id].color
+			   local c = color[cell.rand %
+			      #world.set[cell.id].color +1]
+			      
+			   local col = {}
+			   for k, v in pairs(c) do
+			      col[k] = v
+			   end
+			   
+			   col.blink = {255,255,255}
+			   col.time = cell.time
+			   
+			   return col
+   end
+   
+   return {0, 0, 0}
+end
+
+
 function world.image(x, y)
    local pos = world.pos(x, y)
    local cell = world.map[pos.x][pos.y]
    if (cell.see) then
-      if (cell.obj) then
-         --return cell.obj:char()
-         return {0, 1, 0}
-      else
-         if (cell.prop) then
-            return {0, 1, 0}
-         else
-            local c = 
-               cell.rand %
-                  #world.set[cell.id].img
-            return world.set[cell.id].img[c + 1]
-         end
-      end
+      local c = 
+         cell.rand % #world.set[cell.id].img
+      return world.set[cell.id].img[c + 1]
    else
       return {0, 0, 0}
    end
@@ -168,89 +204,22 @@ function world.getActor(x, y)
 
 end
 
-function world.mapColor(x, y)
-   local pos = world.pos(x, y)
-   local cell = world.map[pos.x][pos.y]
-   local color = world.set[cell.id].color
-   local c = color[cell.rand %
-      #world.set[cell.id].color +1]
-      
-   local col = {}
-   for k, v in pairs(c) do
-      col[k] = v
-   end
-   ---local col = {c[1], c[2], c[3]}
-   if (not cell.mem) then
-      col.blink = {0,0,0}
-   end
-   
-   return col
-end
 
--- Move object in world
-function world.move(obj, x, y)
-   local npos = world.pos(x, y)
-   local newcell = world.map[npos.x][npos.y]
-   
-   if (newcell.obj == nil) then
-      local pos = obj.pos
-      local oldcell = world.map[pos.x][pos.y]
-      oldcell.obj = nil
-      newcell.obj = obj
-      obj.pos = npos
-      
-      if (world.set[oldcell.id].leave) then
-         oldcell.id = world.set[oldcell.id].leave
-      end
-      
-      return nil
-   else
-      local mo = world.map[npos.x][npos.y].obj
-      if (mo ~= obj) then
-         return mo
-      else
-         return nil
-      end
-   end
-end
-
--- move actor across the map
-function world.shift(obj, x, y)
-   local pos = 
-      world.pos(obj.pos.x + x, obj.pos.y + y)
-   local cell = world.map[pos.x][pos.y]
-   local id = cell.id
-   
-   if (world.set[cell.id].hit) then
-      local k = world.set[id].key
-      if k then
-         if obj:haskey(k) then
-            cell.id = world.set[cell.id].hit
-         else
-            obj.message = "I need "..k.."!"
-         end
-      else
-         cell.id = world.set[cell.id].hit
-      end
-   end
-   
-   if (world.set[id].move) then
-      return world.move(obj, pos.x, pos.y)
-   else
-      cell.hit = true
-      return nil
-   end
-end
-
-function world.open(x, y, key)
+function world.open(x, y)
    local p = world.pos(x, y)
    local id = world.map[p.x][p.y].id
-   if key then
-      if world.set[id].key then
-         return world.set[id].key == key
-      end
-   end
    return world.set[id].move
+end
+
+function world.random(x, y)
+   local p = world.pos(x, y)
+   return world.map[p.x][p.y].rand
+end
+
+function world.key(x, y)
+   local p = world.pos(x, y)
+   local id = world.map[p.x][p.y].id
+   return world.set[id].key
 end
 
 -- insert actor in world
@@ -271,10 +240,7 @@ function world.flush()
    for x=1, world.width do
       for y=1, world.height do
          local cell = world.map[x][y]
-         cell.mem = cell.see
          cell.see = false
-         cell.hitdelay = cell.hit
-         cell.hit = nil
       end
    end
 end
@@ -314,7 +280,9 @@ function world.floodview(x, y, range, cx, cy)
       local pos = world.pos(nx, ny)
       local cell = world.map[pos.x][pos.y]
       local check = not cell.see
+      
       cell.see = true
+
       if (world.set[cell.id].see and check) then
          world.floodview(x, y, range, nx, ny)
       end
@@ -354,21 +322,6 @@ function world.path(ox, oy, tx, ty)
    end
    
    return npath
-end
-
-function world.rpath()
-   local dir = {
-      {x=0,y=0},
-      {x=1,y=0},
-      {x=0,y=0},
-      {x=-1,y=0},
-      {x=0,y=-1}
-   }
-   return dir[love.math.random(#dir)]
-end
-
-function world.distsq(x1, y1, x2, y2)
-   --local minx = math.min(x1 - x2, x1 + world.width - x2)
 end
 
 function world.ray(x1, y1, x2, y2)
@@ -434,85 +387,205 @@ function world.ray(x1, y1, x2, y2)
 end
 
 
--------------------------------------------------
--- Game update method ---------------------------
--------------------------------------------------
-function world.update(x, y)
+-- Move object in world
+function world.move(obj, x, y)
+   local npos = world.pos(x, y)
+   local newcell = world.map[npos.x][npos.y]
    
-   world.message = nil
+   if (newcell.obj == nil) then
+      local pos = obj.pos
+      local oldcell = world.map[pos.x][pos.y]
+      oldcell.obj = nil
+      newcell.obj = obj
+      obj.pos = npos
+      
+      if (world.set[oldcell.id].leave) then
+         oldcell.id = world.set[oldcell.id].leave
+      end
+      
+      return nil
+   else
+      local mo = world.map[npos.x][npos.y].obj
+      if (mo ~= obj) then
+         return mo
+      else
+         return nil
+      end
+   end
+end
+
+
+-- move actor across the map
+function world.shift(obj, x, y, t)
+   local pos = 
+      world.pos(obj.pos.x + x, obj.pos.y + y)
+   local cell = world.map[pos.x][pos.y]
+   local id = cell.id
    
-   --world.player:command(x, y)
-   controller.playerinput = {x=x, y=y}
-   
-   for i, actor in  ipairs(world.actor) do
-      local cell = 
-         world.map[actor.pos.x][actor.pos.y]
-      if (actor.alive) then
-         -- move and update actor
-         local move = actor:update(world)
-         if (move.x == 0 and move.y == 0) then
-            if (cell.prop) then
-               actor.message = "I have "..
-                  cell.prop.name.."!"
-               cell.prop:pickup(actor, world)
-            end
+   if (world.set[cell.id].hit) then
+      local k = world.set[id].key
+      if k then
+         if obj:haskey(k) then
+            cell.id = world.set[cell.id].hit
          else
-            local other = 
-               world.shift(actor, move.x, move.y)
-            if (other) then
-               other:push(actor)
-               actor.message = 
-                  "I hit "..other:getName().."!"
-            end
-         end
-         -- Apply tile effects
-         local ncell = 
-            world.map[actor.pos.x][actor.pos.y]
-         local effect =
-            world.set[ncell.id].effect
-         if (effect) then
-            for e, t in pairs(effect) do
-               actor.effect[e] = t
-            end
+            obj.message = "I need "..k.."!"
          end
       else
-         if (actor.rot == 0) then
-            local prop = actor:die(world)
-            if (not cell.prop) then
-               cell.prop = prop
-            end
-            cell.obj = nil
-            world.actor[i] = nil
-         else
-            actor.rot = actor.rot - 1
-         end
+         cell.id = world.set[cell.id].hit
       end
    end
    
-   world.flush()
-   
-   world.map[world.player.pos.x]
-      [world.player.pos.y].see = true
-   
-   world.floodview(
-      world.player.pos.x, world.player.pos.y, 5
-   )
-   
-   if not world.message and
-      world.player.effect.hit 
-      then
-      local hm ={
-         "Ouch!", 
-         "Oomf!", 
-         "Ha!", 
-         "Grr!",
-         "Eeow!",
-         "Ow!",
-         "Gaah!"
-         }
-      world.message = hm[love.math.random(#hm)]
+   if (world.set[id].move) then
+      local oldpos = obj.pos
+      
+      local hit = world.move(obj, pos.x, pos.y)
+      
+      if not hit then
+         world.map[oldpos.x][oldpos.y].time = t
+         cell.state = "walk"
+      end
+      return hit
+   else
+      if cell.prop then
+         obj:pickup(cell)
+      end
+      cell.time = t
+      cell.state = "hit"
+      return nil
+   end
+end
+
+function world.fademap(n)
+
+   n = n or 1
+
+   for i=1, n do
+			   local rx = 
+			      love.math.random(
+			      -world.view - 1, world.view + 1)
+			   local ry = love.math.random(
+			      -world.view - 1,  world.view + 1)
+			      
+			   local pos = world.pos(
+			      world.player.pos.x + rx,
+			      world.player.pos.y + ry)
+			   
+			   world.map[pos.x][pos.y].see = false
    end
    
+   world.map
+      [world.player.pos.x]
+      [world.player.pos.y].see 
+      = true
+end
+
+function world.revealmap(t)
+   for x = -world.view - 1, world.view + 1 do
+      for y = -world.view - 1, world.view + 1 do
+         local pos = world.pos(
+			         world.player.pos.x + x,
+			         world.player.pos.y + y)
+         world.map[pos.x][pos.y].time = t
+         world.map[pos.x][pos.y].state = "reveal"
+      end
+   end
+end
+
+
+-------------------------------------------------
+-- Game update method ---------------------------
+-------------------------------------------------
+
+function world.input(x, y)
+   controller.playerinput = {x=x, y=y}
+end
+
+function world.update(time)
+   if world.transition < 0 then
+      world.iterate(time)
+   else
+      if world.transition == 0 then
+         world.transition = - 1
+         world.transitionmethod()
+         world.revealmap(time)
+         return
+      end
+   
+      if time - world.transitiontime > 0 then
+         world.fademap(10)
+         world.transition = world.transition - 1
+         world.transitiontime = time
+      end
+   end
+end
+
+function world.iterate(time)
+
+   local actor = world.actor[world.i]
+   
+   local cell = 
+      world.map[actor.pos.x][actor.pos.y]
+   if (actor.alive) then
+      -- move and update actor
+      local move = actor:update(world)
+      
+      if not move then
+         return false -- stop if waiting on input
+      end
+      
+      if (move.x == 0 and move.y == 0) then
+         cell.time = time
+         if (cell.prop) then
+            --cell.prop:pickup(actor, world)
+            actor:pickup(cell)
+         end
+      else
+         local other = world.shift(
+            actor, move.x, move.y, time)
+         if (other) then
+            other:push(actor)
+            other.time = time
+         end
+      end
+      -- Apply tile effects
+      local ncell = 
+         world.map[actor.pos.x][actor.pos.y]
+      local effect =
+         world.set[ncell.id].effect
+      if (effect) then
+         actor.time = time
+         for e, t in pairs(effect) do
+            actor.effect[e] = t
+         end
+      end
+   else
+      if (actor.rot == 0) then
+         local prop = actor:die(world)
+         if (not cell.prop) then
+            cell.prop = prop
+         end
+         cell.obj = nil
+         table.remove(world.actor, world.i)
+         world.i = world.i - world.i
+      else
+         actor.rot = actor.rot - 1
+      end
+   end
+   
+   if world.i == 1 then
+     world.flush()
+     world.map[actor.pos.x][actor.pos.y].see=true
+     world.floodview(
+        actor.pos.x, actor.pos.y, world.view)
+   end
+
+   world.i = world.i + 1
+   
+   if world.i > #world.actor then
+      world.i = 1
+   end
+   
+   return cell.see
 end
 
 

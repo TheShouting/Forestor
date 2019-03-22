@@ -1,12 +1,30 @@
 local mapset = {
+      blank = {
+         name = "blank space",
+         char={" . "},
+         img = {
+            {0, 9, 0}
+            },
+         color={
+         {96, 96, 96},
+         {128, 128, 128},
+         {160, 160, 160}
+         }, 
+         move=true,
+         see=true
+      },
       path = {
          name = "path",
          char = {".o.", " o.", ".o ", " o "}, 
          img = {
-            {0, 15, 14},
-            {14, 0, 16},
-            {16, 14, 15},
-            {16, 15, 16}
+            {0, 25, 0},
+            {27, 25, 0},
+            {0, 25, 27},
+            {27, 25, 27},
+            {0, 26, 0},
+            {0, 26, 27},
+            {27, 26, 0},
+            {27, 26, 27}
             },
          color={{70, 60, 60}}, 
          move=true,
@@ -16,7 +34,8 @@ local mapset = {
          name = "puddle",
          char={" ~ "},
          img = {
-           {1, 1, 1}
+           {9, 10, 9},
+           {9, 9, 9}
            },
          color={{20, 60, 100,
             ember={30,90,110}}}, 
@@ -39,7 +58,7 @@ local mapset = {
          name = "flower",
          char={" * ", ".*."},
          img = {
-            {1, 1, 1}
+            {13, 14, 13}
             },
          color={
             {156, 156, 72},
@@ -66,7 +85,7 @@ local mapset = {
          name = "tall grass",
          char={"iii"},
          img = {
-            {13, 13, 13}
+            {23, 23, 23}
             },
          color={{50, 120, 30}},
          move=true,
@@ -78,8 +97,8 @@ local mapset = {
          name = "big trees",
          char = {"/\\\\", "//\\", "/V\\"},
          img = {
-            {19, 20, 18},
-            {18, 19, 20}
+            {17, 18, 19},
+            {19, 17, 18}
             },
          color={
             {100, 200, 50},
@@ -94,8 +113,8 @@ local mapset = {
          name = "trees",
          char = {"/\\_", "^/\\", "./\\"},
          img = {
-            {19, 20, 9},
-            {9, 19, 20}
+            {20, 21, 19},
+            {19, 20, 21}
             },
          color={
             {100, 200, 50},
@@ -110,8 +129,8 @@ local mapset = {
          name = "log",
          char={"c=o"},
          img = {
-            {22, 23, 21},
-            {21, 22, 23}
+            {20, 21, 22},
+            {22, 20, 21}
             },
          color={{200, 120, 90}}, 
          move=false,
@@ -123,7 +142,7 @@ local mapset = {
          name = "broken branches",
          char={"_-_","-_-","_._","._-", "_-."},
          img = {
-            {0, 24, 0}
+            {0, 22, 0}
             },
          color={{100, 80, 70}}, 
          move=true,
@@ -133,7 +152,7 @@ local mapset = {
          name = "open door",
          char = {"|_|"},
          img = {
-            {5, 8, 7}
+            {3, 6, 3}
             },
          color = {{128, 128, 128}},
          move = true,
@@ -144,7 +163,7 @@ local mapset = {
          name = "closed door",
          char = {"|+|"},
          img = {
-            {5, 6, 7}
+            {3, 4, 3}
             },
          color = {{200, 200, 200}},
          move = false,
@@ -157,7 +176,7 @@ local mapset = {
          color = {
             {200, 200, 200}
             },
-         img = {5, 1, 7},
+         img = {3, 5, 3},
          move = false,
          see = false,
          hit = "dooropen",
@@ -167,9 +186,7 @@ local mapset = {
          name = "wall",
          char = {"|#|"},
          img = {
-            {2, 2, 2},
-            {2, 3, 4},
-            {2, 3, 2}
+            {2, 2, 2}
             },
          color = {{200, 200, 200}},
          move = false,
@@ -179,7 +196,10 @@ local mapset = {
          name = "cliff",
          char = {"%%%"},
          img = {
-            {1, 1, 1}
+            {28, 29, 28},
+            {29, 28, 29},
+            {28, 28, 29},
+            {29, 28, 28}
             },
          color = {{180, 140, 80}},
          move = false,
@@ -198,6 +218,18 @@ local mapset = {
          see = true,
          hit = "dirt",
          key = "dig"
+      },
+   portal = {
+         name = "magical ground",
+         char = {"{0}"},
+         img = {
+            {33, 34, 35}
+            },
+         color = {
+            {128,0,128,ember={255,128,255}}
+            },
+         move = true,
+         see = true
       }
    }
    
