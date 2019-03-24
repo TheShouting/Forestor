@@ -86,6 +86,18 @@ function world.load(file)
 end
 
 
+function world.propertymap(property)
+   local map = {}
+   for x = 1, world.width do
+      map[x] = {}
+      for y = 1, world.height do
+         local id = world.map[x][y].id
+         map[x][y] = world.set[id][property]
+      end
+   end
+   return map
+end
+
 -- Return new position within the map
 function world.pos(px, py)
    return {
@@ -441,6 +453,7 @@ function world.shift(obj, x, y, t)
       local hit = world.move(obj, pos.x, pos.y)
       
       if not hit then
+         cell.time = t
          world.map[oldpos.x][oldpos.y].time = t
          cell.state = "walk"
       end

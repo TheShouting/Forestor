@@ -65,6 +65,7 @@ function menuscene:newgame()
    world.new(100, 100)
    world.generate()
    self.newscene = gamescene(world)
+   self.newscene.previousscene = self
 end
 
 function menuscene:loadgame()

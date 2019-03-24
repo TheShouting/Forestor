@@ -19,6 +19,11 @@ function scene:_init(...)
    
    self.newscene = self
    
+   self.drawpress = true
+   self.presstime = 0
+   self.pressarea = {0, 0, 0, 0}
+   self.presshit = {0, 0}
+   
 end
 
 function scene:input(x, y)
@@ -28,12 +33,21 @@ function scene:input(x, y)
          if (x > w.x and x < w.x + w.w) then
             if (y > w.y and y < w.y + w.h) then
                w.input(self)
+               self.presstime =
+                  love.timer.getTime()
+               self.pressarea = {
+                  w.x, w.y, w.w, w.h}
+               self.presshit = {x, y}
                return
             end
          end
       end
    end
    
+end
+
+function scene:goprevious()
+   self.newscene = self.previousscene
 end
 
 function scene:updateScene(dt)
@@ -61,6 +75,19 @@ function scene:drawScene()
       if w.draw then
          w:draw()
       end
+   end
+   
+   if self.drawpress then
+      local alpha = 24
+			   local dt =
+			      love.timer.getTime() - self.presstime
+			   local a = alpha - math.min(dt*2, 1) * alpha
+			   love.graphics.setColor(255, 255, 255, a)
+			   love.graphics.rectangle("fill", 
+			      self.pressarea[1], self.pressarea[2], 
+			     self.pressarea[3], self.pressarea[4])
+			   love.graphics.circle("fill", 
+			      self.presshit[1], self.presshit[2], 80)
    end
    
    if self.debug then

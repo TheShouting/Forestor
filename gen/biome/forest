@@ -1,0 +1,17 @@
+local tools = require("gen.tools")
+
+local forest = { 
+   ... --meta-fields here 
+   } 
+   
+forest.forest = function(map, x, y, rng, key) 
+   
+end 
+
+setmetatable(forest, { 
+   __call = function(_, map, x, y, rng, key) 
+      return forest.forest(map, x, y, rng, key)
+   end 
+   }) 
+   
+return forest

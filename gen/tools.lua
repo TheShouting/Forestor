@@ -1,4 +1,19 @@
-local tools = {}
+-- tools module 
+-- for manipulating map tables containing
+   -- w: width
+   -- h: height
+   -- 2d indices: map data of any type
+
+local copy = function(map)
+   local c = {w = map.w, h = map.h}
+   for x = 1, map.w do
+      c[x] = {}
+      for y = 1, map.h do
+         c[x][y] = map[x][y]
+      end
+   end
+   return c
+end
 
 local make = function(w, h, fill)
 
@@ -11,6 +26,25 @@ local make = function(w, h, fill)
       end
    end
    
+   return map
+end
+
+local pointdiff = function(p1, p2, size)
+   return math.min(
+      math.abs(p1-p2),
+      math.abs(p1-p2-size))
+end
+
+local stencil = function(map, stencil, a, b)
+   for x = 1, map.h do
+      for y = 1, map.w do
+         local sx = (x - 1) % stencil.w + 1
+         local sy = (y - 1) % stencil.h + 1
+         if stencil[sx][sy] == a then
+            map[x][y] = b
+         end
+      end
+   end
    return map
 end
 
@@ -83,10 +117,15 @@ local clearrect = function(map, x, y, r, c)
          map[px][py] = c
       end
    end
+   
+   return map
 
 end
 
-local apply = function(map, stamp, sx, sy, a)
+local apply = function(map, stamp, a, sx, sy)
+
+   sx = sx or 0
+   sy = sy or 0
 
    for x = 1, stamp.w do
       for y = 1, stamp.h do
@@ -98,7 +137,8 @@ local apply = function(map, stamp, sx, sy, a)
          end
       end
    end
-
+   
+   return map
 end
 
 
@@ -114,12 +154,9 @@ local noise = function(map, n, a, rng)
 end
 
 
-local room = function(w, h, wall, floor, door, rng)
-
+local room = function(w, h, wall, floor)
    floor = floor or "blank"
-
    local map = make(w+2, h+2, floor)
-
    for x = 1, w+2 do
       for y = 1, h+2 do
          if (x == 1 or x == w+2 or 
@@ -128,29 +165,33 @@ local room = function(w, h, wall, floor, door, rng)
          end
       end
    end
-   
-   if not door then
-      door = floor
-   end
-   
-   local side = rng:random(2) - 1
-   if love.math.random() < 0.5 then
-      local dx = (w + 1) * side + 1
-      local dy = rng:random(h) + 1
-      map[dx][dy] = door
-   else
-      local dx = rng:random(w) + 1
-      local dy = (h + 1) * side + 1
-      map[dx][dy] = door
-   end
-   
    return map
-
 end
+
+local door = function(map, dx, dy, door)
+
+   dx = math.min(math.max(dx, 2), map.w-1)
+   dy = math.min(math.max(dy, 2), map.h-1)
+
+   
+   if math.abs((dx/map.w) - 0.5) < 
+      math.abs((dy/map.h) - 0.5) then
+      local side = math.floor((dy / map.h) + 0.5)
+      dx = (map.w - 1) * side + 1
+   else
+      local side = math.floor((dx / map.w) + 0.5)
+      dy = (map.h - 1) * side + 1
+   end
+   
+   map[dx][dy] = door
+   return map
+end
+
+
 
 local line = function(map, x1, y1, x2, y2, cell)
 
-   local tx = y2 - map.w
+   local tx = x2 - map.w
    local ty = y2 - map.h
    
    if math.abs(tx - x1) < math.abs(x2 - x1) then
@@ -206,15 +247,15 @@ local line = function(map, x1, y1, x2, y2, cell)
          map[px][py] = cell
       end
    end
-
+   
+   return map
 end
 
 
 local road = function(map, x1, y1, x2, y2, r)
 
-   local tx = y2 - map.w
+   local tx = x2 - map.w
    local ty = y2 - map.h
-   
    if math.abs(tx - x1) < math.abs(x2 - x1) then
       x2 = tx
    end
@@ -222,48 +263,133 @@ local road = function(map, x1, y1, x2, y2, r)
       y2 = ty
    end
    
-   local s4 = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}}
+   local dx = math.min(
+      math.abs(x2-x1), math.abs(x2-x1-map.w))
+   local dy = math.min(
+      math.abs(y2-y1), math.abs(y2-y1-map.h))
+      
+   local steep = dx < dy
    
    local px = (x1 + map.w - 1) % map.w + 1
    local py = (y1 + map.h - 1) % map.h + 1
    map[px][py] = r
    
-   while (x1 ~= x2 and y1 ~= y2) do
+   while x1 ~= x2 or y1 ~= y2 do
    
-      local low = map.w*map.w + map.h*map.h
-      local nx = x1
-      local ny = y1
-      
-      for i, s in pairs(s4) do
-         local dx = (x1 - x2 + s[1])
-         local dy = (y1 - y2 + s[2])
-         local d = dx*dx + dy*dy
-         if (d < low) then
-            low = d
-            nx = x1 + s[1]
-            ny = y1 + s[2]
+      if steep then
+         if x1 == x2 then
+            y1 = y1 + (y1 < y2 and 1 or -1)
+         else
+            x1 = x1 + (x1 < x2 and 1 or -1)
+         end
+      else
+         if y1 == y2 then
+            x1 = x1 + (x1 < x2 and 1 or -1)
+         else
+            y1 = y1 + (y1 < y2 and 1 or -1)
          end
       end
-      x1 = nx
-      y1 = ny
-   
       local px = (x1 + map.w - 1) % map.w + 1
       local py = (y1 + map.h - 1) % map.h + 1
       map[px][py] = r
    end
-   
+   return map
 end
 
-tools = {
+local replace = function(map, a, b)
+   for x = 1, map.w do
+      for y = 1, map.h do
+         if map[x][y] == a then
+            map[x][y] = b
+         end
+      end
+   end
+   return map
+end
+
+local grow = function(map, a, n, use8)
+  local search = {}
+  if use8 then
+     search = {
+        {x=1, y=0}, {x=1, y=1}, {x=0, y=1},
+        {x=-1, y=1}, {x=-1, y=0}, {x=-1, y=-1},
+        {x=0, y=-1}, {x=1, y=-1} }
+  else
+     search = {
+			     {x=1, y=0}, {x=0, y=1},
+			     {x=-1, y=0}, {x=0, y=-1} }
+  end
+  local nmap = copy(map)
+  for x = 1, map.w do
+     for y = 1, map.h do
+        if nmap[x][y] ~= a then
+           local i = 0
+           for k, s in pairs(search) do
+              local sx = (x+s.x-1) % map.w + 1
+              local sy = (y+s.y-1) % map.h + 1
+              if (nmap[sx][sy] == a) then
+                 i = i + 1
+              end
+           end
+           if i >= n then
+              map[x][y] = a
+           end
+        end
+     end
+  end
+  return map
+end
+
+local reduce = function(map, a, b, n, use8)
+  local search = {}
+  if use8 then
+     search = {
+        {x=1, y=0}, {x=1, y=1}, {x=0, y=1},
+        {x=-1, y=1}, {x=-1, y=0}, {x=-1, y=-1},
+        {x=0, y=-1}, {x=1, y=-1} }
+  else
+     search = {
+			     {x=1, y=0}, {x=0, y=1},
+			     {x=-1, y=0}, {x=0, y=-1} }
+  end
+  local nmap = copy(map)
+  for x = 1, map.w do
+     for y = 1, map.h do
+        if nmap[x][y] == a then
+           local i = 0
+           for k, s in pairs(search) do
+              local sx = (x+s.x-1) % map.w + 1
+              local sy = (y+s.y-1) % map.h + 1
+              if (nmap[sx][sy] == a) then
+                 i = i + 1
+              end
+           end
+           if i < n then
+              map[x][y] = b
+           end
+        end
+     end
+  end
+  return map
+end
+
+local tools = {
+   copy = copy,
    make = make,
+   pointdiff = pointdiff,
+   stencil = stencil,
    cellauto = cellauto,
    clear = clear,
    clearrect = clearrect,
    apply = apply,
    noise = noise,
    room = room,
+   door = door,
    line = line,
-   road = road
+   road = road,
+   replace = replace,
+   grow = grow,
+   reduce = reduce
    }
 
 return tools

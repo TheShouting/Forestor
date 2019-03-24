@@ -85,7 +85,10 @@ local mapset = {
          name = "tall grass",
          char={"iii"},
          img = {
-            {23, 23, 23}
+            {15, 16, 15},
+            {16, 15, 16},
+            {15, 15, 15},
+            {16, 16, 16}
             },
          color={{50, 120, 30}},
          move=true,

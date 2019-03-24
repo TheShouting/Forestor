@@ -1,5 +1,7 @@
 local tools = require("gen.tools")
 local objects = require("game.objects")
+local stage = require("gen.stage")
+local biome = require("gen.biome")
 
 local clearmap = function(world, rng)
    for x=1, world.width do
@@ -25,17 +27,15 @@ local fillmap = function(world, map)
 end
 
 local run = function(world)
-
-   -- My very hacky level generation
-   
 -- 1. place points of interests 
 --    (keys, locks, containers, etc)
 
--- 2. draw path to objective
+-- 2. draw path to objective (designate areas 
+--    that cannot be blocked)
 
 -- 3. make biome
 
--- 4. apply type of interest point
+-- 4. apply set piece to points of interest
 
 -- 5. populate with entities and objects
 
@@ -46,43 +46,54 @@ local run = function(world)
       love.math.newRandomGenerator(seed + lvl)
       
    clearmap(world, rng)
-      
-   local map = tools.make(
-       world.width, world.height, "dirt")
-   tools.noise(map, 0.45, "grass", rng)
-   tools.noise(map, 0.25, "tree", rng)
-   tools.noise(map, 0.15, "puddle", rng)
    
-   local portalx = rng:random(map.w)
-   local portaly = rng:random(map.h)
+   local level = tools.make(
+       world.width, world.height, false)
    
-   tools.line(map, 1, 1, portalx, portaly, "path")
+   -- create points of interest and draw a path
+   -- between them
+   local points = {}
+   local count = 3
+   points[0] = {x=1, y=1}
+   for i = 1, count do
+      points[i] = {
+         x = rng:random(world.width),
+         y = rng:random(world.height)}
+      tools.road(level, 
+         points[i-1].x, points[i-1].y,
+         points[i].x, points[i].y,
+         true)
+   end
    
-   map[portalx][portaly] = "portal"
+   -- create biome
+   local map = biome.forest(level, rng)
+   
+   local rands = {
+      stage.pond,
+      stage.room}
+   -- apply points of interest
+   for k, v in pairs(points) do
+      local r = rng:random(#rands)
+      rands[r](map, level, v.x, v.y, rng)
+   end
+   
+   map[points[#points].x][points[#points].y] =
+      "portal"
    
    fillmap(world, map)
    
-   world.insert(objects.dummy("portal", world.nextlevel), portalx, portaly)
+   world.insert(
+      objects.dummy("portal", world.nextlevel),
+      points[#points].x, points[#points].y)
+      
+   world.map[2][1].prop = objects.prop("axe")
    
-   local monster = objects.actor("goblin")
-   monster.right = objects.prop("axe")
-   world.insert(monster, 5, 3)
-   world.insert(objects.actor("goblin"), 8, 1)
-   
-   --world.insert(objects.dummy("dummy"), -5, 1)
-   
-   --world.insert(
-   --   objects.container(objects.prop("axe")),
-   --   3, 3)
-   
-   world.map[4][2].prop = objects.prop("sword")
-   world.map[2][5].prop = objects.prop("shield")
+   local move = world.propertymap("move")
    
 end
 
 local generate = {
-   run = run,
-   fillmap = fillmap
+   run = run
    }
    
 return generate
