@@ -2,6 +2,7 @@ local tools = require("gen.tools")
 local objects = require("game.objects")
 local stage = require("gen.stage")
 local biome = require("gen.biome")
+local levelgen = require("gen.levelgen")
 
 local clearmap = function(world, rng)
    for x=1, world.width do
@@ -21,10 +22,14 @@ local fillmap = function(world, map)
    for x=1, map.w do
       for y=1, map.h do
          world.map[x][y].id = map[x][y]
-         world.map[x][y].prop = nil
+         --world.map[x][y].prop = nil
       end
    end
 end
+
+
+local travelPoints
+
 
 local run = function(world)
 -- 1. place points of interests 
@@ -41,54 +46,76 @@ local run = function(world)
 
    local lvl = world.level
    local seed = world.seed
-
+   
    local rng = 
       love.math.newRandomGenerator(seed + lvl)
       
    clearmap(world, rng)
    
-   local level = tools.make(
-       world.width, world.height, false)
-   
-   -- create points of interest and draw a path
-   -- between them
-   local points = {}
-   local count = 3
-   points[0] = {x=1, y=1}
-   for i = 1, count do
-      points[i] = {
-         x = rng:random(world.width),
-         y = rng:random(world.height)}
-      tools.road(level, 
-         points[i-1].x, points[i-1].y,
-         points[i].x, points[i].y,
-         true)
-   end
-   
+   local level = levelgen.makeLevel(
+      world.width, world.height, 6, 3, rng)
+      
    -- create biome
-   local map = biome.forest(level, rng)
+   local map, path = biome.forest(level, rng)
+   --local map, path = biome.empty(level, rng)
    
-   local rands = {
-      stage.pond,
-      stage.room}
+   local levelend = levelgen.getFarthest(level)
+   local levelstart = 1
+   
+   
+   
+   local items = {
+      "axe",
+      "sword",
+      "shield"
+   }
+   
    -- apply points of interest
-   for k, v in pairs(points) do
-      local r = rng:random(#rands)
-      rands[r](map, level, v.x, v.y, rng)
+   for i=1, #level do
+      local r = rng:random()
+      local stg = nil
+      local n = level[i]
+      if n == levelstart then
+         stg = stage.start
+      elseif n == levelend then
+         stg = stage.finish
+      elseif #n.neighbors > 2 then
+         stg = stage.crossroad
+         if r > 0.5 then
+            world.insert(
+               objects.actor("goblin"), n.x, n.y)
+         end
+      elseif #n.neighbors > 1 then
+         stg = stage.passage
+         if r > 0.5 then
+            world.insert(
+               objects.actor("goblin"), n.x, n.y)
+         end
+      else
+         stg = stage.endpoint
+         local itm = items[rng:random(#items)]
+         world.map[n.x][n.y].prop = objects.prop(itm)
+         if r > 0.5 then
+            world.insert(
+               objects.actor("goblin"), n.x, n.y)
+         end
+      end
+      r = rng:random(#stg)
+      stg[r](map, path, n.x, n.y, rng, false)
    end
    
-   map[points[#points].x][points[#points].y] =
+   map[level[#level].x][level[#level].y] =
       "portal"
    
    fillmap(world, map)
    
    world.insert(
       objects.dummy("portal", world.nextlevel),
-      points[#points].x, points[#points].y)
+      level[#level].x, level[#level].y)
       
-   world.map[2][1].prop = objects.prop("axe")
+  -- world.map[2][1].prop = objects.prop("axe")
    
-   local move = world.propertymap("move")
+   --local move = world.propertymap("move")
    
 end
 

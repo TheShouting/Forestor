@@ -85,6 +85,11 @@ function gamescene:draw()
          self.world.player.message, 10, 10)
    end
    
+   if self.world.debug then
+      love.graphics.setColor(255,0,0)
+      love.graphics.print(self.world.debug,10,100)
+   end
+   
 end
 
 return gamescene

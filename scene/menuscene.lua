@@ -62,14 +62,18 @@ function menuscene:draw()
 end
 
 function menuscene:newgame()
-   world.new(100, 100)
+   world.new(50, 50)
+   world.seed = love.timer.getTime()
    world.generate()
    self.newscene = gamescene(world)
    self.newscene.previousscene = self
 end
 
 function menuscene:loadgame()
-   self:newgame()
+   world.new(50, 50)
+   world.generate()
+   self.newscene = gamescene(world)
+   self.newscene.previousscene = self
 end
 
 function menuscene:quitgame()

@@ -10,16 +10,19 @@ room.room = function(map, path, x, y, rng, key)
    
    local room = tools.room(w, h, "wall", "dirt")
    
-   --[[
-   tools.door(room, 
-      rng:random(map.w), 
-      rng:random(map.h),
-      "doorclose")
-   --]]
-   
    local rx = x - math.floor(w * 0.5 + 0.5) - 1
    local ry = y - math.floor(h * 0.5 + 0.5) - 1
    tools.apply(map, room, nil, rx, ry)
+   
+   local door = "doorclose"
+   local keyobject = nil
+   
+   if key then
+      if rng:random(2) == 1 then
+         door = "dooropen"
+         keyobject = "key"
+      end
+   end
    
    for x = 1, room.w do
       for y = 1, room.h do
@@ -36,7 +39,7 @@ room.room = function(map, path, x, y, rng, key)
       end
    end
    
-   return nil
+   return keyobject
    
 end 
 
