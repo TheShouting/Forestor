@@ -13,7 +13,7 @@ local clearmap = function(world, rng)
          world.map[x][y].state = ""
          world.map[x][y].time = 0
          world.map[x][y].see = false
-         world.map[x][y].obj = nil
+         --world.map[x][y].obj = nil
       end
    end
 end
@@ -26,9 +26,6 @@ local fillmap = function(world, map)
       end
    end
 end
-
-
-local travelPoints
 
 
 local run = function(world)
@@ -60,14 +57,16 @@ local run = function(world)
    --local map, path = biome.empty(level, rng)
    
    local levelend = levelgen.getFarthest(level)
+   --local levelend = #level
    local levelstart = 1
    
    
    
    local items = {
-      "axe",
-      "sword",
-      "shield"
+      --"axe",
+      --"sword",
+      --"shield",
+      "potion"
    }
    
    -- apply points of interest
@@ -75,12 +74,14 @@ local run = function(world)
       local r = rng:random()
       local stg = nil
       local n = level[i]
-      if n == levelstart then
+      if i == levelstart then
          stg = stage.start
-      elseif n == levelend then
+      elseif i == levelend then
          stg = stage.finish
       elseif #n.neighbors > 2 then
          stg = stage.crossroad
+         world.map[n.x][n.y].prop =
+            objects.prop(itm)
          if r > 0.5 then
             world.insert(
                objects.actor("goblin"), n.x, n.y)
@@ -94,7 +95,8 @@ local run = function(world)
       else
          stg = stage.endpoint
          local itm = items[rng:random(#items)]
-         world.map[n.x][n.y].prop = objects.prop(itm)
+         world.map[n.x][n.y].prop =
+            objects.prop(itm)
          if r > 0.5 then
             world.insert(
                objects.actor("goblin"), n.x, n.y)
@@ -104,15 +106,14 @@ local run = function(world)
       stg[r](map, path, n.x, n.y, rng, false)
    end
    
-   map[level[#level].x][level[#level].y] =
+   map[level[levelend].x][level[levelend].y] =
       "portal"
+   world.insert(
+      objects.dummy("portal", world.nextlevel),
+      level[levelend].x, level[levelend].y)
    
    fillmap(world, map)
    
-   world.insert(
-      objects.dummy("portal", world.nextlevel),
-      level[#level].x, level[#level].y)
-      
   -- world.map[2][1].prop = objects.prop("axe")
    
    --local move = world.propertymap("move")

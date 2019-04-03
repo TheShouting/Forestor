@@ -19,7 +19,7 @@ function scene:_init(...)
    
    self.newscene = self
    
-   self.drawpress = true
+   --self.drawpress = true
    self.presstime = 0
    self.pressarea = {0, 0, 0, 0}
    self.presshit = {0, 0}

@@ -60,5 +60,14 @@ This is the slot from which the player wields the item (right, left, and hold)
 * Rusty - reduced damage
 * Infuriating - makes the defender hyper-aggressive
 
+# Level Generation
+
+Levels are structurally a connected graph. Each node in the graph is assigned a stage depending on how many connections it has.
+
+* Endpoint - only one connection
+* Passage - two connections (one in and one out)
+* Crossroads - three or more connections
+
+
 
 

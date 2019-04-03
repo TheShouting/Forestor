@@ -60,10 +60,10 @@ function world.generate()
       cell.obj = nil
       world.actor[i] = nil
    end
-
-   generate.run(world)
    
    world.move(world.player, 1, 1)
+
+   generate.run(world)
    
    --world.flush()
    world.floodview(1, 1, world.view)
@@ -157,6 +157,22 @@ function world.objColor(x, y)
    return {0,0,0}
 end
 
+
+function world.propImage(x, y)
+   local pos = world.pos(x, y)
+   local cell = world.map[pos.x][pos.y]
+   if (cell.see) then
+      if (cell.prop) then
+         return {0, cell.prop.thumb, 0}
+      end
+   end
+   return nil
+end
+
+function world.propColor()
+   return {255, 255, 255}
+end
+
 -- Get map color for specified position
 function world.mapColor(x, y)
    local pos = world.pos(x, y)
@@ -210,12 +226,14 @@ function world.objImage(x, y)
 end
 
 function world.getActor(x, y)
-
    local p = world.pos(x, y)
    return world.map[p.x][p.y].obj
-
 end
 
+function world.visible(x, y)
+   local p = world.pos(x, y)
+   return world.map[p.x][p.y].see
+end
 
 function world.open(x, y)
    local p = world.pos(x, y)
@@ -546,11 +564,16 @@ function world.iterate(time)
          return false -- stop if waiting on input
       end
       
+      actor.anim = {
+         pos = {x=actor.pos.x, y=actor.pos.y},
+         dir={x=move.x, y=move.y}}
+      
       if (move.x == 0 and move.y == 0) then
          cell.time = time
          if (cell.prop) then
             --cell.prop:pickup(actor, world)
             actor:pickup(cell)
+            
          end
       else
          local other = world.shift(
@@ -571,7 +594,9 @@ function world.iterate(time)
             actor.effect[e] = t
          end
       end
+      
    else
+      actor.anim = nil
       if (actor.rot == 0) then
          local prop = actor:die(world)
          if (not cell.prop) then
@@ -591,6 +616,8 @@ function world.iterate(time)
      world.floodview(
         actor.pos.x, actor.pos.y, world.view)
    end
+
+   actor.updateTime = time
 
    world.i = world.i + 1
    

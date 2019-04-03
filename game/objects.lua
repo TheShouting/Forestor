@@ -1,5 +1,6 @@
 local controller = require("game.controller")
 local set = require("data.objectset")
+local effects = require("game.effects")
 
 
 local objects = {}
@@ -38,6 +39,14 @@ end
 
 function objects.prop:color()
    return {255, 255, 255, sin={128, 128, 128}}
+end
+
+function objects.prop:col()
+   return {255, 255, 255, sin={128, 128, 128}}
+end
+
+function objects.prop:sprite()
+   return {0, img, 0}
 end
 
 function objects.prop:stats()
@@ -84,23 +93,30 @@ function objects.actor:_init(id)
    end
    
    self.alive = true
-   self.rot = 1
+   self.rot = 10
    self.pos = {x=0, y=0}
    self.effect = {}
    self.time = 0
+   self.updateTime = 0
 end
 
 function objects.actor:pickup(cell)
    local prop = cell.prop
    if prop then
-			   if (self[prop.hand]) then
-			      cell.prop = self[prop.hand]
+      if not prop.consume then
+						   if (self[prop.hand]) then
+						      cell.prop = self[prop.hand]
+						   else
+						      cell.prop = nil
+						   end
+						   self[prop.hand] = prop
+						   
+						   self.message = "I have "..prop.name.."!"
 			   else
+			      self.message = "I take "..prop.name.."!"
+			      effects.consume[prop.consume](self,prop)
 			      cell.prop = nil
 			   end
-			   self[prop.hand] = prop
-			   
-			   self.message = "I have "..prop.name.."!"
 			else
 			   self.message = "There's nothing there."
    end
@@ -221,6 +237,8 @@ function objects.actor:sprite()
    local l = 0
    local r = 0
    
+   if self.alive then
+   
    if self.left then
       l = self.left.img or 0
    end
@@ -230,6 +248,14 @@ function objects.actor:sprite()
    end
    
    return {r, self.img, l}
+   
+   else
+      if self.corpse then
+         return {0, self.corpse, 0}
+      else
+         return {0, self.img, 0}
+      end
+   end
 end
 
 function objects.actor:getName()
@@ -290,6 +316,7 @@ function objects.dummy:_init(id, action)
    self.rot = -1
    self.pos = {x=0, y=0}
    self.time = 0
+   self.updateTime = 0
    
    self.action = action
 end

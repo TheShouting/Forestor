@@ -8,6 +8,7 @@ player = {
    think = "player",
    color = {255, 255, 255},
    img = 2,
+   corpse = 28,
    hp = 100,
    str = 20
    },
@@ -17,6 +18,7 @@ goblin = {
    think = "drunk",
    color = {255, 255, 255},
    img = 3,
+   corpse = 27,
    hp = 80,
    str = 20
    },
@@ -65,6 +67,13 @@ shield = {
    hand = "left",
    key = nil,
    val = 20
+   },
+potion = {
+   name = "health potion",
+   char = "'",
+   thumb = 26,
+   val = 10,
+   consume = "heal"
    }
 
 }
