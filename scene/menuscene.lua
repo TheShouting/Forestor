@@ -1,5 +1,6 @@
 local scene = require("scene.scene")
 local gamescene = require("scene.gamescene")
+local testscene = require("scene.testscene")
 local button = require("widget.button")
 
 local world = require("game.world")
@@ -26,7 +27,8 @@ function menuscene:_init()
    scene._init(self, 
      button("NEW GAME", self.newgame, 1200, 500),
      button("CONTINUE", self.loadgame, 1200, 650),
-     button("QUIT", self.quitgame, 1200, 800))
+     button("QUIT", self.quitgame, 1200, 800),
+     button("test", self.test, 200, 800))
      
    self.title =
       love.graphics.newImage(
@@ -73,6 +75,11 @@ function menuscene:loadgame()
    world.new(50, 50)
    world.generate()
    self.newscene = gamescene(world)
+   self.newscene.previousscene = self
+end
+
+function menuscene:test()
+   self.newscene = testscene()
    self.newscene.previousscene = self
 end
 

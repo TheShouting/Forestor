@@ -8,12 +8,31 @@ controller.player = function(a, w)
    return input
 end
 
-controller.coward = function(a, w)
+controller.fighter = function(a, w)
+   local r = 4
 
    local t = w.player.pos
    local o = a.pos
-   if w.ray(o.x, o.y, t.x, t.y) then
-      return controller.flee(a, w)
+   if w.player.alive then
+			   if w.dist(o.x, o.y, t.x, t.y) < r*r then
+						   if w.ray(o.x, o.y, t.x, t.y) then
+						      return controller.seek(a, w)
+						   end
+			   end
+   end
+   
+   return controller.drunk(a, w)
+end
+
+controller.coward = function(a, w)
+   local r = 4
+
+   local t = w.player.pos
+   local o = a.pos
+   if w.dist(o.x, o.y, t.x, t.y) < r*r then
+			   if w.ray(o.x, o.y, t.x, t.y) then
+			      return controller.flee(a, w)
+			   end
    end
    
    return controller.wander(a, w)
@@ -87,11 +106,11 @@ controller.seek = function(a, w)
       
       if open or (not open and key) then
          local dx = math.min(
-            math.abs(tx - s.x), 
-            math.abs(tx - s.x - w.width))
+            math.abs(tx - sx), 
+            math.abs(tx - sx - w.width))
          local dy = math.min(
-            math.abs(ty - s.y), 
-            math.abs(ty - s.y - w.height))
+            math.abs(ty - sy), 
+            math.abs(ty - sy - w.height))
          if (dx*dx + dy*dy < dist) then
             dist = dx*dx + dy*dy
             npath = s4[i]

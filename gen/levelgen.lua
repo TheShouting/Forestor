@@ -1,9 +1,17 @@
 local distanceSqr = function(x1, y1, x2, y2, w, h)
-   local dx =
-      math.min(math.abs(x2-x1), math.abs(x2-x1-w))
-   local dy = 
-      math.min(math.abs(y2-y1), math.abs(y2-y1-h))
+   local dx =math.min(
+      math.abs(x2-x1),
+      w - math.abs(x2-x1))
+   local dy = math.min(
+      math.abs(y2-y1),
+      h - math.abs(y2-y1))
    return dx * dx + dy * dy
+end
+
+local wrap = function(x, y, w, h)
+   x = (x + w - 1) % w + 1
+   y = (y + h - 1) % h + 1
+   return x, y
 end
 
 
@@ -19,6 +27,19 @@ local findClosest = function(samples, pnt, w, h)
 			  end
   end
   return closest
+end
+
+
+local makenearpoint = 
+   function(x, y, minr, maxr, rng)
+
+   local a = rng:random() * 2 * math.pi
+   local rad = rng:random() * (maxr-minr) + minr
+   
+   x = x + math.floor(math.cos(a) * rad + 0.5)
+   y = y + math.floor(math.sin(a) * rad + 0.5)
+   
+   return x, y
 end
 
 
@@ -47,7 +68,6 @@ local nextpoint=function(samples, gen, w, h, rng)
    bestCandidate.neighbors = {parentindex}
    return bestCandidate
 end
-
 
 local makeLevel = function(w, h, child, gen, rng)
 
@@ -78,22 +98,14 @@ local getFarthest = function(tree)
 			      local node = i
 			      
 			      while true do
-			         local neighborfound = false
-			         local lowest = node
-			         for _, n in pairs(neighbors) do
-			            if n < lowest then
-			               lowest = n
-			               neighborfound = true
-			               neighbors =
-			                  tree[node].neighbors
-			            end
-			         end
-			         if neighborfound then
-			            node = lowest
-			            count = count+1
+			         n = neighbors[1]
+			         if n < node then
+			            neighbors = tree[n].neighbors
+			            node = n
 			         else
 			            break
 			         end
+			         count = count+1
 			      end
 			      
 			      if count > distance then
@@ -104,13 +116,66 @@ local getFarthest = function(tree)
       end
    end
    
-   return farthest
+   return farthest, distance
 end
+
+
+local brids = 
+   function(w, h, child, samples, min, max, rng)
+
+			local tree = {{x=1, y=1, neighbors={}}}
+			local available = {1}
+			
+			while #tree <= child and #available > 0 do
+			
+			   local a_i = rng:random(#available)
+			   local parent = available[a_i]
+			
+			   local found = true
+			
+			   for i = 1, samples do
+			      
+			      local nx, ny = makenearpoint(
+			         tree[parent].x, tree[parent].y, 
+			         min, max, rng)
+			      nx, ny = wrap(nx, ny, w, h)
+			      
+			      for _, t in pairs(tree) do
+   			      if distanceSqr(nx,ny,t.x,t.y,w,h)
+   			         < min * min then
+   			         found = false
+   			         break
+   			      end
+			      end
+			      
+			      if found then
+			         table.insert(tree,
+			            {x=nx, y=ny, neighbors={parent}})
+			         table.insert(
+			            tree[parent].neighbors, #tree)
+			         table.insert(available, #tree)
+			         break
+			      end
+			   end
+			   
+			   if not found then
+			      table.remove(available, a_i)
+			   end
+			   
+			end
+			
+			tree.w = w
+			tree.h = h
+			
+			return tree
+end
+
 
 
 local levelgen = {
 	makeLevel = makeLevel,
-	getFarthest = getFarthest
+	getFarthest = getFarthest,
+	brids = brids
 	}
 
 return levelgen

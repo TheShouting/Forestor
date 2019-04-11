@@ -29,7 +29,7 @@ function game:_init(vx, vy, vw, vh, world)
 			
 			self.tilew = 8
 			self.tileh = 16
-			self.scale = 4
+			self.scale = 3
 			
 			self.ground = tileset:load(
 			   "ground", self.tilew, self.tileh)
@@ -40,9 +40,16 @@ end
 
 function game:update(dt)
 
+   local offx = self.off.x
+   local offy = self.off.y
+   local ww = self.world.width
+   local wh = self.world.height
    local pos = self.world.player.pos
-   local dx = math.abs(self.off.x - pos.x)
-   local dy = math.abs(self.off.y - pos.y)
+   
+   local dx = math.min(math.abs(pos.x - offx),
+      math.abs(pos.x - offx - ww))
+   local dy = math.min(math.abs(pos.y - offy),
+      math.abs(pos.y - offy - wh))
    if (dx >= self.range) then
       self.off.x = pos.x
    end
@@ -129,30 +136,62 @@ function game:draw()
    
    -- Draw all visible actors on top of map
    for _, a in pairs(actors) do
-      local ax = a.pos.x - self.off.x
-      local ay = a.pos.y - self.off.y
-      
-      if a.anim then
-         ax = a.anim.pos.x - self.off.x
-         ay = a.anim.pos.y - self.off.y
-         local bx = ax + a.anim.dir.x
-         local by = ay + a.anim.dir.y
-						   local dt = timer - a.updateTime
-								 local v = math.min(dt * 6, 1)
-									local j = math.sin(v * 3.142) * 0.33
-									
-         if a.anim.pos.x == a.pos.x and
-            a.anim.pos.y == a.pos.y then
-            v = math.sin(v * 3.142) * 0.25
-            j = 0
-									end
-									
-									ax = ax + (bx - ax) * v
-								 ay = ay + (by - ay) * v - j
-				  end
+      local ax = a.pos.x
+      local ay = a.pos.y
+      local bx = ax
+      local by = ay
+         
+      if #a.animation > 0 then
+			      local ftime = 1 / 6
+			      local dt = timer - a.updateTime
+			      local f = math.floor(dt / ftime)
+			      f = math.min(f, #a.animation - 1)
+			      dt = dt - f * ftime
+			 
+         local anim = a.animation[f + 1]
+         
+			      ax = anim.pos.x
+			      ay = anim.pos.y
+			      bx = ax + anim.dir.x
+			      by = ay + anim.dir.y
+									   
+								 if anim.lerp then
+											 local v = math.min(dt / ftime, 1)
+												local j = 0
+															
+						      if anim.lerp == "bump" then
+						         v = math.sin(v * 3.142) * 0.25
+						      elseif anim.lerp == "step" then
+						         j = math.sin(v * 3.142) * 0.33
+												end
+															
+												ax = ax + (bx - ax) * v
+											 ay = ay + (by - ay) * v - j
+									else
+										  ax = bx
+										  ay = by
+								 end
+					 end
 				  
-				  ax = (ax) * tw + self.w * 0.5
-      ay = (ay) * th + self.h * 0.5
+				  -- eventually, have the position of the
+				  -- animated sprite cause the map glow
+				  --[[
+				  local tx = math.floor(bx)
+				  local ty = math.floor(by)
+				  local tile = self.world.image(tx, ty)
+				  --]]
+				  
+				  local worldw = self.world.width
+				  local worldh = self.world.height
+				  
+				  ax = ax - self.off.x
+				  ay = ay - self.off.y
+				  
+				  ax = (ax+worldw*0.5) % worldw - worldw*0.5
+				  ay = (ay+worldh*0.5) % worldh - worldh*0.5
+				  
+				  ax = ax * tw + self.w * 0.5
+      ay = ay * th + self.h * 0.5
       
       local o = a.pos.x * a.pos.y *
          self.world.random(a.pos.x, a.pos.y)*0.01

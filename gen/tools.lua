@@ -32,7 +32,7 @@ end
 local pointdiff = function(p1, p2, size)
    return math.min(
       math.abs(p1-p2),
-      math.abs(p1-p2-size))
+      size-math.abs(p1-p2))
 end
 
 local stencil = function(map, stencil, a, b)
@@ -264,9 +264,9 @@ local road = function(map, x1, y1, x2, y2, r)
    end
    
    local dx = math.min(
-      math.abs(x2-x1), math.abs(x2-x1-map.w))
+      math.abs(x2-x1), map.w - math.abs(x2-x1))
    local dy = math.min(
-      math.abs(y2-y1), math.abs(y2-y1-map.h))
+      math.abs(y2-y1), map.h - math.abs(y2-y1))
       
    local steep = dx < dy
    

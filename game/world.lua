@@ -24,6 +24,8 @@ function world.new(width, height)
    world.view = 4
    world.i = 1
    
+   world.updatetime = 0
+   
    world.transition = -1
    world.transitiontime = 0
    world.transitionmethod = world.generate
@@ -62,6 +64,7 @@ function world.generate()
    end
    
    world.move(world.player, 1, 1)
+   world.player.animation = {}
 
    generate.run(world)
    
@@ -354,6 +357,20 @@ function world.path(ox, oy, tx, ty)
    return npath
 end
 
+function world.dist(x1, y1, x2, y2)
+   local p1 = world.pos(x1, y1)
+   local p2 = world.pos(x2, y2)
+   
+   local x = math.min(
+      math.abs(p1.x - p2.x),
+      world.width - math.abs(p1.x - p2.x))
+   local y = math.min(
+      math.abs(p1.y - p2.y),
+      world.height - math.abs(p1.y - p2.y))
+   
+   return x * x + y * y
+end
+
 function world.ray(x1, y1, x2, y2)
 
    local tx = y2 - world.width
@@ -446,44 +463,66 @@ end
 
 
 -- move actor across the map
-function world.shift(obj, x, y, t)
-   local pos = 
-      world.pos(obj.pos.x + x, obj.pos.y + y)
-   local cell = world.map[pos.x][pos.y]
-   local id = cell.id
+function world.shift(obj, x, y, t, dist)
+
+   dist = dist or 1
+
+   local anim = {
+			      pos = {x=obj.pos.x, y=obj.pos.y},
+			      dir = {x=x*dist, y=y*dist}, 
+			      lerp = "bump"
+			      }
+			         
+		 obj.anim[#obj.anim + 1] = anim
    
-   if (world.set[cell.id].hit) then
-      local k = world.set[id].key
-      if k then
-         if obj:haskey(k) then
-            cell.id = world.set[cell.id].hit
-         else
-            obj.message = "I need "..k.."!"
-         end
-      else
-         cell.id = world.set[cell.id].hit
-      end
+   for i = 1, dist or 1 do
+			         
+			   local pos = 
+			      world.pos(obj.pos.x + x, obj.pos.y + y)
+			   local cell = world.map[pos.x][pos.y]
+			   local id = cell.id
+			   
+			   if (world.set[cell.id].hit) then
+			      local k = world.set[id].key
+			      if k then
+			         if obj.active then
+						         if obj:usekey(k) then
+						            cell.id =
+						               world.set[cell.id].hit
+						         else
+						            obj.message = "I need "..k.."!"
+						         end
+			         end
+			      else
+			         cell.id = world.set[cell.id].hit
+			      end
+			   end
+			   
+			   if (world.set[id].move) then
+			      local oldpos = obj.pos
+			      
+			      local hit = 
+			         world.move(obj, pos.x, pos.y)
+			      
+			      if not hit then
+			         cell.time = t
+			         world.map[oldpos.x][oldpos.y].time=t
+			         cell.state = "walk"
+			         anim.lerp = 
+			            obj.active and "step" or "slide"
+			      else
+			         return hit
+			      end
+			   else
+			      if cell.prop and obj.active then
+			         obj:pickup(cell)
+			      end
+			      cell.time = t
+			      cell.state = "hit"
+			      return nil
+			   end
    end
-   
-   if (world.set[id].move) then
-      local oldpos = obj.pos
-      
-      local hit = world.move(obj, pos.x, pos.y)
-      
-      if not hit then
-         cell.time = t
-         world.map[oldpos.x][oldpos.y].time = t
-         cell.state = "walk"
-      end
-      return hit
-   else
-      if cell.prop then
-         obj:pickup(cell)
-      end
-      cell.time = t
-      cell.state = "hit"
-      return nil
-   end
+   return nil
 end
 
 function world.fademap(n)
@@ -554,6 +593,19 @@ function world.iterate(time)
 
    local actor = world.actor[world.i]
    
+   if actor.right then
+      if actor.right.integrity <= 0 then
+         actor.right = nil
+      end
+   end
+   
+   if actor.left then
+      if actor.left.integrity <= 0 then
+         actor.left = nil
+      end
+   end
+   
+   
    local cell = 
       world.map[actor.pos.x][actor.pos.y]
    if (actor.alive) then
@@ -564,23 +616,35 @@ function world.iterate(time)
          return false -- stop if waiting on input
       end
       
-      actor.anim = {
-         pos = {x=actor.pos.x, y=actor.pos.y},
-         dir={x=move.x, y=move.y}}
-      
       if (move.x == 0 and move.y == 0) then
-         cell.time = time
-         if (cell.prop) then
-            --cell.prop:pickup(actor, world)
-            actor:pickup(cell)
             
+         if actor.active then
+            local anim = {
+               pos = {x=actor.pos.x,
+                  y=actor.pos.y},
+               dir = {x=0, y=0}}
+         
+            cell.time = time
+            if cell.prop then
+               actor:pickup(cell)
+               anim.lerp = "step"
+            end
+            actor.anim[#actor.anim + 1] = anim
          end
       else
-         local other = world.shift(
-            actor, move.x, move.y, time)
-         if (other) then
+         local other = 
+            world.shift(actor,move.x,move.y,time)
+         if other and actor.active then
             other:push(actor)
             other.time = time
+            if actor.knockback then
+               if other.alive and 
+                  not other.heavy then
+                  world.shift(other, 
+                     move.x, move.y, 
+                     time, actor.knockback)
+               end
+            end
          end
       end
       -- Apply tile effects
@@ -591,12 +655,11 @@ function world.iterate(time)
       if (effect) then
          actor.time = time
          for e, t in pairs(effect) do
-            actor.effect[e] = t
+            actor.status[e] = t
          end
       end
       
    else
-      actor.anim = nil
       if (actor.rot == 0) then
          local prop = actor:die(world)
          if (not cell.prop) then
@@ -606,6 +669,7 @@ function world.iterate(time)
          table.remove(world.actor, world.i)
          world.i = world.i - world.i
       else
+         actor.animation = {}
          actor.rot = actor.rot - 1
       end
    end
@@ -618,14 +682,18 @@ function world.iterate(time)
    end
 
    actor.updateTime = time
-
+   actor.active = false
+   if #actor.anim > 0 then
+      actor.animation = actor.anim
+      actor.anim = {}
+   end
+   
    world.i = world.i + 1
    
    if world.i > #world.actor then
       world.i = 1
    end
    
-   return cell.see
 end
 
 

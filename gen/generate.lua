@@ -4,6 +4,8 @@ local stage = require("gen.stage")
 local biome = require("gen.biome")
 local levelgen = require("gen.levelgen")
 
+local effects = require("game.effects")
+
 local clearmap = function(world, rng)
    for x=1, world.width do
       for y=1, world.height do
@@ -49,24 +51,32 @@ local run = function(world)
       
    clearmap(world, rng)
    
-   local level = levelgen.makeLevel(
-      world.width, world.height, 6, 3, rng)
+   --local level = levelgen.makeLevel(
+   --   world.width, world.height, 6, 3, rng)
+      
+   local level = levelgen.brids(
+      world.width, world.height, 
+      8, 100, 8, 16, rng)
       
    -- create biome
    local map, path = biome.forest(level, rng)
    --local map, path = biome.empty(level, rng)
    
-   local levelend = levelgen.getFarthest(level)
+   local levelend, _ =
+      levelgen.getFarthest(level)
    --local levelend = #level
    local levelstart = 1
    
-   
-   
    local items = {
-      --"axe",
-      --"sword",
-      --"shield",
+      "axe",
+      "sword",
+      "shield",
+      "hammer",
       "potion"
+   }
+   local object = {
+      "goblin",
+      "deer"
    }
    
    -- apply points of interest
@@ -74,6 +84,8 @@ local run = function(world)
       local r = rng:random()
       local stg = nil
       local n = level[i]
+      local itm = items[rng:random(#items)]
+      local obj = object[rng:random(#object)]
       if i == levelstart then
          stg = stage.start
       elseif i == levelend then
@@ -82,24 +94,23 @@ local run = function(world)
          stg = stage.crossroad
          world.map[n.x][n.y].prop =
             objects.prop(itm)
-         if r > 0.5 then
+         if r > 0.25 then
             world.insert(
-               objects.actor("goblin"), n.x, n.y)
+               objects.actor(obj), n.x, n.y)
          end
       elseif #n.neighbors > 1 then
          stg = stage.passage
-         if r > 0.5 then
+         if r > 0.25 then
             world.insert(
-               objects.actor("goblin"), n.x, n.y)
+               objects.actor(obj), n.x, n.y)
          end
       else
          stg = stage.endpoint
-         local itm = items[rng:random(#items)]
          world.map[n.x][n.y].prop =
             objects.prop(itm)
-         if r > 0.5 then
+         if r > 0.25 then
             world.insert(
-               objects.actor("goblin"), n.x, n.y)
+               objects.actor(obj), n.x, n.y)
          end
       end
       r = rng:random(#stg)
@@ -114,7 +125,9 @@ local run = function(world)
    
    fillmap(world, map)
    
-  -- world.map[2][1].prop = objects.prop("axe")
+   local p = objects.prop("hammer")
+   --p.hiteffects = {effects.hit.cut}
+   world.map[2][2].prop = effects.brittle(p)
    
    --local move = world.propertymap("move")
    
