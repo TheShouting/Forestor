@@ -74,6 +74,16 @@ function game:draw()
    local vw = math.floor((self.w / tw) * 0.5) + 1
    local vh = math.floor((self.h / th) * 0.5) + 1
    
+   
+   local px = (self.off.x - vw) * tw
+   local py = (self.off.y - vh) * th
+   love.graphics.setColor(0, 40, 0)
+   love.graphics.ellipse(
+			   "fill", px, py, px * 0.5, py * 0.5)
+			love.graphics.setColor(255, 255, 255, 64)
+   love.graphics.ellipse(
+			   "fill", px, py, px * 0.1, py * 0.1)
+   
    for x=1, vw*2 do
       for y=1, vh*2 do
          
@@ -123,13 +133,18 @@ function game:draw()
 			         end
          end
          
-         util.drawglow(col, cx, cy, tw, th)
+        -- util.drawglow(col, cx, cy, tw, th)
          
+         -- collate
          if self.world.visible(wx, wy) then
 			         local a = self.world.getActor(wx, wy)
 			         if a then
 			            actors[#actors+1] = a
 			         end
+			      else
+			         love.graphics.setColor(0,0,0)
+			         love.graphics.rectangle(
+			            "fill", cx, cy, tw, th)
          end
       end
    end

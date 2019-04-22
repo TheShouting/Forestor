@@ -14,9 +14,10 @@ forest.forest = function(level, rng)
       local neighbors = level[i].neighbors
       for _, n in pairs(neighbors) do
 			      if n > i then
-						      tools.road(path, 
+						      tools.path(path, 
 						         level[i].x, level[i].y, 
-						         level[n].x, level[n].y, true)
+						         level[n].x, level[n].y, true,
+						         8, rng)
 			      end
       end
    end

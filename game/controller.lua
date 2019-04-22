@@ -107,10 +107,10 @@ controller.seek = function(a, w)
       if open or (not open and key) then
          local dx = math.min(
             math.abs(tx - sx), 
-            math.abs(tx - sx - w.width))
+            w.width - math.abs(tx - sx))
          local dy = math.min(
             math.abs(ty - sy), 
-            math.abs(ty - sy - w.height))
+            w.height - math.abs(ty - sy))
          if (dx*dx + dy*dy < dist) then
             dist = dx*dx + dy*dy
             npath = s4[i]
@@ -145,10 +145,10 @@ controller.flee = function(a, w)
       if open or (not open and key) then
          local dx = math.min(
             math.abs(tx - sx), 
-            math.abs(tx - sx - w.width))
+            w.width - math.abs(tx - sx))
          local dy = math.min(
             math.abs(ty - sy), 
-            math.abs(ty - sy - w.height))
+            w.height - math.abs(ty - sy))
          if (dx*dx + dy*dy > dist) then
             dist = dx*dx + dy*dy
             npath = s4[i]

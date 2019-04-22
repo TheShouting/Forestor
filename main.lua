@@ -11,8 +11,18 @@ local scene = require("scene.menuscene")
 local app = nil
 
 function love.load()
-   love.graphics.setNewFont(
-      "assets/font/FiraCode-Regular.ttf", 48)
+
+   local imgf = love.graphics.newImageFont(
+      "woods_font-large.png", 
+      " abcdefghijklmnopqrstuvwxyz"..
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"..
+      "1234567890!@#$%^&*()-="..
+      "[]\\;'.,/`_+{}|:\"<>?~"
+      )
+   love.graphics.setFont(imgf)
+
+   --love.graphics.setNewFont(
+   --   "assets/font/FiraCode-Regular.ttf", 48)
    love.graphics.setColor(255,255,255)
    love.graphics.setBackgroundColor(0,0,0)
    

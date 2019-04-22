@@ -7,20 +7,22 @@ player = {
    character = "@",
    think = "player",
    color = {255, 255, 255},
+   hands = true,
    img = 2,
    corpse = 28,
-   hp = 100,
-   str = 20
+   hp = 10,
+   str = 3
    },
 goblin = {
    name = "a goblin",
    character = "a",
    think = "fighter",
    color = {255, 255, 255},
+   hands = true,
    img = 3,
    corpse = 27,
-   hp = 100,
-   str = 20
+   hp = 10,
+   str = 2
    },
 deer = {
    name = "a deer",
@@ -29,8 +31,8 @@ deer = {
    color = {255, 255, 255},
    img = 5,
    corpse = 27,
-   hp = 50,
-   str = 5
+   hp = 5,
+   str = 1
    },
 table = {
    name = "a table",
@@ -58,7 +60,8 @@ axe={
    thumb = 12,
    hand = "right",
    key = "chop",
-   dmg = 10
+   dmg = 2,
+   req=3
    },
 sword={
    name = "sword",
@@ -67,7 +70,8 @@ sword={
    thumb = 10,
    hand = "right",
    key = nil,
-   dmg = 30
+   dmg = 3,
+   req=4
    },
 shield = {
    name = "shield",
@@ -76,15 +80,17 @@ shield = {
    thumb = 18,
    hand = "left",
    key = nil,
-   def = 20
+   def = 2,
+   req=4
    },
 potion = {
    name = "health potion",
    char = "'",
    thumb = 26,
    consume = "heal",
+   auto = true,
    pickup = function(self, actor)
-         actor.hp = actor.hp + 15
+         actor.hp = actor.hp + 2
       end
    },
 hammer={
@@ -93,8 +99,9 @@ hammer={
    img = 13,
    thumb = 14,
    hand = "right",
-   dmg = 10,
-   knockback = 1,
+   dmg = 1,
+   req=4,
+   knockback = 2,
    hit = function(self, owner, other)
          other:setstatus("stun", 1)
       end

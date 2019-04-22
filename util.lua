@@ -21,6 +21,8 @@ end
 
 
 function util.processcolor(color, t, offset)
+
+   offset = offset or 0
    
    local ncol = color
    if (color.ember) then

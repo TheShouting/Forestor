@@ -3,7 +3,7 @@ local controller = require("game.controller")
 local entity = require("game.objects.entity")
 
 -- actor class --------------------------
-actor = {}
+local actor = {}
 actor.__index = actor
 setmetatable(actor, {
    __index = entity,
@@ -20,12 +20,13 @@ function actor:_init(id)
    self.alive = true
    self.rot = 10
    self.thinkeffects = {}
+   self.memdmg = 0
 end
 
 
 function actor:pickup(cell)
    local prop = cell.prop
-   if prop then
+   if prop and self.hands then
       if not prop.consume then
 						   if (self[prop.hand]) then
 						      cell.prop = self[prop.hand]
@@ -62,24 +63,6 @@ function actor:setcontroller(t, c)
 end
 
 
-function actor:attack(other)
-   if self.right then
-      self.right:hitother(self, other)
-   end
-
-
-   local a = self.str
-   if (self.right) then
-      self.right:activate(self)
-      a = a + self.right:getval("dmg")
-   end
-   
-   self.message = 
-    "I hit "..other:getName().." for "..a.." dmg"
-   other:dmg(a)
-end
-
-
 function actor:push(other)
    if self.alive then
       other:attack(self)
@@ -87,18 +70,73 @@ function actor:push(other)
 end
 
 
-function actor:dmg(dmg)
-   if self.left then
-      dmg = dmg - self.left.getval("def")
+function actor:attack(other)
+   
+   local dmg = -1
+   
+   local str = self.str
+   
+   if self.right then
+      self.right:hitother(self, other)
+      if self.right.dmg then
+         local req = self.right:getval("req")
+         
+         if str >= req then
+            dmg = love.math.random(0, str - req)
+               + self.right:getval("dmg")
+         else
+             if love.math.random(0, req - str) 
+                == 0 then
+                dmg = love.math.random(0, str)
+                   + self.right:getval("dmg")
+             end
+         end 
+      end
+   else
+      dmg = love.math.random(-1, str)
    end
+   
+   if dmg >= 0 then
+      self.message = 
+         "I hit "..other:getName()..
+         " for "..dmg.." dmg"
+      other:defend(dmg, self)
+   else
+      self.message = "I missed "..other:getName()
+   end
+end
+
+function actor:defend(dmg, other)
+
+   if self.left then
+      if self.left.def then
+         local def = self.left.getval("def")
+         dmg = math.max(dmg - def, 0)
+         self.left:use() 
+         -- maybe add a scale value where its 
+         -- only partially used if low dmg
+      end
+   end
+
+   self:dmg(dmg)
+end
+
+
+function actor:dmg(dmg)
+   
    self.hp = self.hp - dmg
-   self.memdmg = dmg
+   self.memdmg = -dmg
    
    if (self.hp <= 0) then
       self.alive = false
    end
    self.status.hit = 1
    
+end
+
+function actor:heal(amt)
+   self.hp = self.hp + amt
+   self.memdmg = amt
 end
 
 function actor:setstatus(s, n)
@@ -113,6 +151,7 @@ end
 
 function actor:update(world)
    self.message = nil
+   --self.memdmg = 0
    
    for e, val in pairs(self.status) do
       if (val > 0) then

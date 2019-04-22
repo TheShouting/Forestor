@@ -2,6 +2,7 @@ local scene = require("scene.scene")
 local game = require("widget.game")
 local hud = require("widget.hud")
 local button = require("widget.button")
+local slot = require("widget.slot")
 
 local gamescene = {}
 
@@ -26,8 +27,7 @@ function gamescene:_init(world)
    -- set draw areas
    self.game = 
       game(60, 60, sw-120, sh-120, world)
-   self.hud = 
-      hud(60, sh-60, sw-120, 60, world.player)
+   self.hud = hud(0, 0, sw, sh, world.player)
    
    -- set touch input areas
 			
@@ -79,11 +79,6 @@ end
 function gamescene:draw()
    self.game:draw()
    self.hud:draw()
-   
-   if self.world.player.message then
-      love.graphics.print(
-         self.world.player.message, 10, 10)
-   end
    
    if self.world.debug then
       love.graphics.setColor(255,0,0)

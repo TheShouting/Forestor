@@ -15,6 +15,7 @@ local clearmap = function(world, rng)
          world.map[x][y].state = ""
          world.map[x][y].time = 0
          world.map[x][y].see = false
+         world.map[x][y].bitmask = 0
          --world.map[x][y].obj = nil
       end
    end
@@ -27,6 +28,8 @@ local fillmap = function(world, map)
          --world.map[x][y].prop = nil
       end
    end
+   
+   world.makeneighbormap()
 end
 
 
@@ -56,7 +59,7 @@ local run = function(world)
       
    local level = levelgen.brids(
       world.width, world.height, 
-      8, 100, 8, 16, rng)
+      8, 100, 12, 16, rng)
       
    -- create biome
    local map, path = biome.forest(level, rng)
@@ -75,8 +78,7 @@ local run = function(world)
       "potion"
    }
    local object = {
-      "goblin",
-      "deer"
+      "goblin"
    }
    
    -- apply points of interest

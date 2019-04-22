@@ -34,12 +34,41 @@ end
 
 function testscene:draw()
 
+   local path = function(x1, y1, x2, y2, threshold)
+   
+      local count = math.floor(math.min(
+         math.abs(x1 - x2), math.abs(y1 - y2)
+         ) / threshold)+1
+      
+      local xdist = (x2 - x1) / count
+      local ydist = (y2 - y1) / count
+      
+      local startx = x1
+      local starty = y1
+   
+      for i=0, count-1 do
+      
+         x1 = startx + xdist * i
+         y1 = starty + ydist * i
+         x2 = x1 + xdist
+         y2 = y1 + ydist
+   
+         --if math.abs(x1 - x2) >
+         --   math.abs(y1 - y2) then
+            love.graphics.line(x1, y1, x1, y2)
+            love.graphics.line(x1, y2, x2, y2)
+         --else
+            love.graphics.line(x1, y1, x2, y1)
+            love.graphics.line(x2, y1, x2, y2)
+         --end
+      end
+   end
+
    love.graphics.setColor(64, 64, 64)
    love.graphics.rectangle("line", 
       self.x, self.y, self.w, self.h)
    love.graphics.line(0, 540, 1920, 540)
    love.graphics.line(960, 0, 960, 1080)
-
 
 
    for ox = -1, 1 do
@@ -62,9 +91,10 @@ function testscene:draw()
             
             love.graphics.print(i, x+5, y+5)
             
-            
-            
             for _, n in ipairs(node.neighbors) do
+                  
+                  if n > i then
+               
                
                   local nx = self.level[n].x + px
                   local ny = self.level[n].y + py
@@ -89,8 +119,11 @@ function testscene:draw()
                      ny = ny - self.h
                   end
                   
+                  
+                  path(x,y,nx,ny, 100)
                   love.graphics.line(x,y,nx,ny)
                   
+                  end
             end
          end
          

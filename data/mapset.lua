@@ -28,7 +28,8 @@ local mapset = {
             },
          color={{70, 60, 60}}, 
          move=true,
-         see=true
+         see=true,
+         neighbors = {path=true}
       },
       puddle = {
          name = "puddle",
@@ -38,7 +39,7 @@ local mapset = {
            {9, 9, 9}
            },
          color={{20, 60, 100,
-            ember={30,90,110}}}, 
+            ember={30,90,110}}},
          move=true,
          see=true,
          effect={wet=3}
@@ -91,6 +92,7 @@ local mapset = {
             {16, 16, 16}
             },
          color={{50, 120, 30}},
+         neighbors = {tallgrass=true},
          move=true,
          see=false,
          hit = "grass",
@@ -106,7 +108,8 @@ local mapset = {
          color={
             {100, 200, 50},
             {150, 200, 50}
-            }, 
+            },
+         neighbors = {tree=true, treesmall=true},
          move=false,
          see=false,
          hit = "treesmall",
@@ -123,6 +126,7 @@ local mapset = {
             {100, 200, 50},
             {150, 200, 50}
             },
+         neighbors = {tree=true, treesmall=true},
          move = false,
          see = false,
          hit = "stump",
@@ -192,6 +196,12 @@ local mapset = {
             {2, 2, 2}
             },
          color = {{200, 200, 200}},
+         neighbors = {
+            dooropen=true, 
+            doorclose=true,
+            doorlocked=true,
+            wall=true
+            },
          move = false,
          see = false
       },

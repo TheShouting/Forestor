@@ -252,7 +252,7 @@ local line = function(map, x1, y1, x2, y2, cell)
 end
 
 
-local road = function(map, x1, y1, x2, y2, r)
+local road = function(map, x1, y1, x2, y2, r, flip)
 
    local tx = x2 - map.w
    local ty = y2 - map.h
@@ -268,7 +268,7 @@ local road = function(map, x1, y1, x2, y2, r)
    local dy = math.min(
       math.abs(y2-y1), map.h - math.abs(y2-y1))
       
-   local steep = dx < dy
+   local steep = dx < dy and not flip or flip
    
    local px = (x1 + map.w - 1) % map.w + 1
    local py = (y1 + map.h - 1) % map.h + 1
@@ -373,6 +373,47 @@ local reduce = function(map, a, b, n, use8)
   return map
 end
 
+
+local path = function(map, x1, y1, x2, y2, r,
+   threshold, rng)
+   
+   local tx = x2 - map.w
+   local ty = y2 - map.h
+   if math.abs(tx - x1) < math.abs(x2 - x1) then
+      x2 = tx
+   end
+   if math.abs(ty - y1) < math.abs(y2 - y1) then
+      y2 = ty
+   end
+      
+   local count = math.ceil(math.min(
+      math.abs(x1 - x2), math.abs(y1 - y2)
+      ) / threshold)
+      
+   local xdist = (x2 - x1) / count
+   local ydist = (y2 - y1) / count
+   
+   local startx = x1
+   local starty = y1
+
+   for i = 0, count - 1 do
+      x1 = startx + xdist * i
+      y1 = starty + ydist * i
+      x2 = x1 + xdist
+      y2 = y1 + ydist
+      
+      map = road(map, 
+         math.floor(x1 + 0.5),
+         math.floor(y1 + 0.5),
+         math.floor(x2 + 0.5),
+         math.floor(y2 + 0.5),
+         r, rng:random() > 0.5)
+   end
+
+   return map
+
+end
+
 local tools = {
    copy = copy,
    make = make,
@@ -389,7 +430,8 @@ local tools = {
    road = road,
    replace = replace,
    grow = grow,
-   reduce = reduce
+   reduce = reduce,
+   path = path
    }
 
 return tools

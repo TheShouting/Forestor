@@ -1,6 +1,6 @@
 -- World handler
 
-
+-- require("bit32")
 local generate = require("gen.generate")
 local objects = require("game.objects")
 local mapset = require("data.mapset")
@@ -43,7 +43,8 @@ function world.new(width, height)
             rand = 0,
             see = false,
             time = 0,
-            state = ""
+            state = "",
+            bitmask = 0
          }
       end
    end
@@ -99,6 +100,43 @@ function world.propertymap(property)
       end
    end
    return map
+end
+
+function world.setbitmask(x, y)
+   local p = world.pos(x, y)
+   
+   local search = {
+        {x=1, y=0}, {x=1, y=1}, {x=0, y=1},
+        {x=-1, y=1}, {x=-1, y=0}, {x=-1, y=-1},
+        {x=0, y=-1}, {x=1, y=-1} }
+        
+   local cell = world.map[p.x][p.y]
+   local tile = world.set[cell.id]
+   
+   local bw = 0
+   if tile.neighbors then
+      for i, s in ipairs(search) do
+         local np = world.pos(s.x+p.x, s.y+p.y)
+         local nid = world.map[np.x][np.y].id
+         if tile.neighbors[nid] then
+            bw = bit.bor(bw, 2^(i-1))
+         end
+      end
+   end
+   cell.bitmask = bw
+
+end
+
+
+
+function world.makeneighbormap()
+
+   for x = 1, world.width do
+      for y = 1, world.height do
+         world.setbitmask(x, y)
+      end
+   end
+
 end
 
 -- Return new position within the map
@@ -510,6 +548,12 @@ function world.shift(obj, x, y, t, dist)
 			         cell.state = "walk"
 			         anim.lerp = 
 			            obj.active and "step" or "slide"
+			         
+			         if cell.prop then
+			            if cell.prop.auto then
+			               obj:pickup(cell)
+			            end
+			         end
 			      else
 			         return hit
 			      end
@@ -593,6 +637,38 @@ function world.iterate(time)
 
    local actor = world.actor[world.i]
    
+   local taken = world.taketurn(actor, time)
+   
+   if taken then
+      if world.i == 1 then
+        world.flush()
+        world.map[actor.pos.x][actor.pos.y].see
+           = true
+        world.floodview(
+           actor.pos.x, actor.pos.y, world.view)
+      end
+      
+      actor.memdmg = 0
+      actor.updateTime = time
+      actor.active = false
+      if #actor.anim > 0 then
+         actor.animation = actor.anim
+         actor.anim = {}
+      end
+      
+      world.i = world.i + 1
+      
+      if world.i > #world.actor then
+         world.i = 1
+      end
+   end
+   
+end
+
+
+
+function world.taketurn(actor, time)
+
    if actor.right then
       if actor.right.integrity <= 0 then
          actor.right = nil
@@ -674,26 +750,7 @@ function world.iterate(time)
       end
    end
    
-   if world.i == 1 then
-     world.flush()
-     world.map[actor.pos.x][actor.pos.y].see=true
-     world.floodview(
-        actor.pos.x, actor.pos.y, world.view)
-   end
-
-   actor.updateTime = time
-   actor.active = false
-   if #actor.anim > 0 then
-      actor.animation = actor.anim
-      actor.anim = {}
-   end
-   
-   world.i = world.i + 1
-   
-   if world.i > #world.actor then
-      world.i = 1
-   end
-   
+   return true
 end
 
 
