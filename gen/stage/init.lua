@@ -12,11 +12,9 @@ local stage = {
    },
    endpoint = {
       room,
-      meadow,
-      pond
+      meadow
    },
    crossroad = {
-      pond,
       meadow
    },
    passage = {

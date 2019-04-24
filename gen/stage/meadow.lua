@@ -13,7 +13,7 @@ meadow.meadow = function(map, path, x, y, rng, key)
       tools.make(rpos*2+1, rpos*2+1, "blank")
       
    tools.clear(meadow, rpos+1, rpos+1, rad, "grass")
-   tools.noise(meadow, 0.05, "flower", rng)
+   tools.noise(meadow, 0.05, "dirt", rng)
    
    local rx = x - rpos - 1
    local ry = y - rpos - 1

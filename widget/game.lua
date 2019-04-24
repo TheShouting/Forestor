@@ -1,6 +1,10 @@
 local util = require("util")
 
-local tileset = require("assets.tileset")
+local imagehandler = require("assets.imagehandler")
+
+local color = require("assets.color")
+
+local tileset = require("data.tileset")
 
 local game = {}
 
@@ -21,20 +25,18 @@ function game:_init(vx, vy, vw, vh, world)
 			--self.tilew = 30
 			--self.tileh = 60
 			
-			self.canvas = love.graphics.newCanvas(vw, vh)
 			
+			self.scale = 4
+			self.dw = math.ceil(vw / self.scale)
+			self.dh = math.ceil(vh / self.scale)
+			self.canvas = 
+			   love.graphics.newCanvas(self.dw, self.dh)
+			self.canvas:setFilter( "linear", "nearest" )
 			self.off = {x = 1, y = 1 }
 			self.range = 4
 			self.world = world
-			
-			self.tilew = 8
-			self.tileh = 16
-			self.scale = 3
-			
-			self.ground = tileset:load(
-			   "ground", self.tilew, self.tileh)
-			self.objects = tileset:load(
-			   "objects", self.tilew, self.tileh)
+			   
+			self.handler = imagehandler("ground")
 			   
 end
 
@@ -68,21 +70,32 @@ function game:draw()
 
    local timer = love.timer.getTime()
    
-   local tw = self.tilew * 3 * self.scale
-   local th = self.tileh * self.scale
+   local tw = tileset.width
+   local th = tileset.height
    
-   local vw = math.floor((self.w / tw) * 0.5) + 1
-   local vh = math.floor((self.h / th) * 0.5) + 1
+   local vw = math.floor((self.dw/tw) * 0.5) + 1
+   local vh = math.floor((self.dh/th) * 0.5) + 1
    
    
-   local px = (self.off.x - vw) * tw
-   local py = (self.off.y - vh) * th
-   love.graphics.setColor(0, 40, 0)
-   love.graphics.ellipse(
-			   "fill", px, py, px * 0.5, py * 0.5)
-			love.graphics.setColor(255, 255, 255, 64)
-   love.graphics.ellipse(
-			   "fill", px, py, px * 0.1, py * 0.1)
+   local worldw = self.world.width
+			local worldh = self.world.height
+				  
+			local px = self.world.player.pos.x-self.off.x
+			local py = self.world.player.pos.y-self.off.y
+				  
+			px = (px+worldw*0.5) % worldw - worldw*0.5
+			py = (py+worldh*0.5) % worldh - worldh*0.5
+			
+			px = px * tw + self.dw * 0.5
+   py = py * th + self.dh * 0.5
+   
+   love.graphics.setColor(60, 70, 40)
+   love.graphics.circle("fill", 
+      px + tw*0.5, py + th*0.5, tw * 4)
+      
+   love.graphics.setColor(120, 140, 80)
+   love.graphics.circle("fill", 
+      px + tw*0.5, py + th*0.5, tw * 1)
    
    for x=1, vw*2 do
       for y=1, vh*2 do
@@ -91,60 +104,59 @@ function game:draw()
          local wy = self.off.y + y - vh
          --local char = self.world.char(wx, wy)
          
-         local cx = (x - vw) * tw + self.w * 0.5
-         local cy = (y - vh) * th + self.h * 0.5
+         local cx = (x - vw) * tw + self.dw * 0.5
+         local cy = (y - vh) * th + self.dh * 0.5
          
-         local o = wx * wy *
+         local r = wx * wy *
             (self.world.random(wx, wy) / 100)
+            
+         local state, ctime =
+            self.world.getState(wx,wy)
+            
+         local tile = 
+            tileset[self.world.getTile(wx,wy)]
+            
+         if not tile then
+            tile = tileset["blank"]
+         end
+            
+         if state ~= "hidden" then
          
-         local t = self.world.image(wx, wy)
-         
-         local col = self.world.mapColor(wx, wy)
-         col = util.processcolor(col, timer, o)
-         
-         love.graphics.setColor(col)
-         for i = 1, 3 do
-            if t[i] > 0 then
-               love.graphics.draw(
-                  self.ground.img, 
-                  self.ground.tile[t[i]],
-                  cx + (i - 1)* (tw / 3), cy, 0, 
-                  self.scale, self.scale, 0, 0)
+            col = color:getColor(tile.color)
+            
+            col.time = ctime
+            if state == "hit" then
+               col.blink = {210, 180, 120}
+            elseif state == "walk" then
+               col.blink = {255,255, 255}
             end
-         end
+            
+            col = util.processcolor(col,timer,r)
+            love.graphics.setColor(col)
          
-         t = self.world.propImage(wx, wy)
-         
-         if t then
-			         col = self.world.objColor(wx, wy)
-			         col = util.processcolor(col,timer,o)
-			         love.graphics.setColor(col)
-         
-			         for i = 1, 3 do
-			            if t[i] > 0 then
-			               love.graphics.draw(
-			                  self.objects.img, 
-			                  self.objects.tile[t[i]],
-			                  cx + (i - 1)* (tw / 3), cy, 
-			                  0, 
-			                  self.scale, self.scale, 
-			                  0, 0)
-			            end
-			         end
-         end
-         
-        -- util.drawglow(col, cx, cy, tw, th)
-         
-         -- collate
-         if self.world.visible(wx, wy) then
+            local bitmask =
+               self.world.getbitmask(wx, wy)
+            
+            self.handler:drawtile(cx, cy,
+               tile, bitmask, r, 1)
+            
+            if self.world.propImage(wx, wy) then
+               love.graphics.setColor(
+                  255,255,255)
+               love.graphics.rectangle(
+   			            "fill", cx+tw*0.25, cy+th*0.25,
+   			            tw*0.5, th*0.5)
+            end
+            
+            -- collate actors
 			         local a = self.world.getActor(wx, wy)
 			         if a then
 			            actors[#actors+1] = a
 			         end
 			      else
-			         love.graphics.setColor(0,0,0)
+			         love.graphics.setColor(0, 0, 0)
 			         love.graphics.rectangle(
-			            "fill", cx, cy, tw, th)
+   			         "fill", cx, cy, tw, th)
          end
       end
    end
@@ -205,31 +217,25 @@ function game:draw()
 				  ax = (ax+worldw*0.5) % worldw - worldw*0.5
 				  ay = (ay+worldh*0.5) % worldh - worldh*0.5
 				  
-				  ax = ax * tw + self.w * 0.5
-      ay = ay * th + self.h * 0.5
+				  ax = ax * tw + self.dw * 0.5
+      ay = ay * th + self.dh * 0.5
       
       local o = a.pos.x * a.pos.y *
          self.world.random(a.pos.x, a.pos.y)*0.01
       local ac = 
          util.processcolor(a:col(), timer, o)
       love.graphics.setColor(ac)
-			      
-						local img = a:sprite()
-						for i=1, 3 do
-						   if img[i] > 0 then
-									   love.graphics.draw(
-									      self.objects.img, 
-									      self.objects.tile[img[i]],
-									      ax + (i - 1) * (tw / 3), ay, 0, 
-									      self.scale, self.scale, 0, 0)
-									end
-					 end
+			   
+			   
+			   love.graphics.circle("fill", 
+			      ax + tw*0.5, ay + th*0.5, tw * 0.25)
    end
    
    -- Draw canvas
    love.graphics.setCanvas()
    love.graphics.setColor(255,255,255)
-   love.graphics.draw(self.canvas,self.x,self.y)
+   love.graphics.draw(
+      self.canvas, self.x, self.y, 0, self.scale)
    
 end
 

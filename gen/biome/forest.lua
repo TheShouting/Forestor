@@ -23,9 +23,9 @@ forest.forest = function(level, rng)
    end
     --tools.grow(map, true, 1)
     
-    tools.stencil(map, path, true, "grass")
+   tools.stencil(map, path, true, "grass")
    
-   tools.noise(map, 0.3, "grass", rng)
+   tools.noise(map, 0.35, "grass", rng)
    for i = 1, 3 do
       tools.cellauto(map, "tree", "grass")
    end
@@ -41,7 +41,7 @@ forest.forest = function(level, rng)
    tools.stencil(ground, path, true, "path")
    
    local grass = tools.make(w, h, "dirt")
-   tools.noise(grass, 0.35, "tallgrass", rng)
+   tools.noise(grass, 0.4, "tallgrass", rng)
    for i = 1, 3 do
       tools.cellauto(grass, "tallgrass", "dirt")
    end

@@ -102,19 +102,19 @@ function world.propertymap(property)
    return map
 end
 
-function world.setbitmask(x, y)
+
+function world.getneighbors(x, y)
    local p = world.pos(x, y)
-   
    local search = {
-        {x=1, y=0}, {x=1, y=1}, {x=0, y=1},
-        {x=-1, y=1}, {x=-1, y=0}, {x=-1, y=-1},
-        {x=0, y=-1}, {x=1, y=-1} }
-        
+        {x=0, y=-1},
+        {x=1, y=0},
+        {x=0, y=1},
+        {x=-1, y=0}
+        }
    local cell = world.map[p.x][p.y]
    local tile = world.set[cell.id]
-   
    local bw = 0
-   if tile.neighbors then
+   if tile and tile.neighbors then
       for i, s in ipairs(search) do
          local np = world.pos(s.x+p.x, s.y+p.y)
          local nid = world.map[np.x][np.y].id
@@ -124,19 +124,24 @@ function world.setbitmask(x, y)
       end
    end
    cell.bitmask = bw
-
 end
 
 
-
 function world.makeneighbormap()
-
    for x = 1, world.width do
       for y = 1, world.height do
-         world.setbitmask(x, y)
+         world.getneighbors(x, y)
       end
    end
+end
 
+
+function world.getbitmask(x, y)
+   local p = world.pos(x, y)
+   if world.map[p.x][p.y].bitmask < 0 then
+      world.getneighbors(x, y)
+   end
+   return world.map[p.x][p.y].bitmask
 end
 
 -- Return new position within the map
@@ -147,27 +152,23 @@ function world.pos(px, py)
    }
 end
 
--- Get display characters for specified position
-function world.char(x, y)
+
+function world.getTile(x, y)
    local pos = world.pos(x, y)
    local cell = world.map[pos.x][pos.y]
-   if (cell.see) then
-      if (cell.obj) then
-         return cell.obj:char()
-      else
-         if (cell.prop) then
-            return " "..cell.prop.char.." "
-         else
-            local c = 
-               cell.rand %
-                  #world.set[cell.id].char
-            return world.set[cell.id].char[c + 1]
-         end
-      end
-   else
-      return "   "
-   end
+   return world.set[cell.id].tile
 end
+
+
+function world.getState(x, y)
+   local pos = world.pos(x, y)
+   local cell = world.map[pos.x][pos.y]
+   if cell.see then
+      return cell.state, cell.time
+   end
+   return "hidden", cell.time
+end
+
 
 function world.name(x, y)
    local pos = world.pos(x, y)
@@ -178,6 +179,7 @@ function world.name(x, y)
       return world.set[cell.id].name
    end
 end
+
 
 -- Get object color for specified position
 function world.objColor(x, y)
@@ -208,47 +210,6 @@ function world.propImage(x, y)
       end
    end
    return nil
-end
-
-function world.propColor()
-   return {255, 255, 255}
-end
-
--- Get map color for specified position
-function world.mapColor(x, y)
-   local pos = world.pos(x, y)
-   local cell = world.map[pos.x][pos.y]
-   
-   if cell.see then
-			   local color = world.set[cell.id].color
-			   local c = color[cell.rand %
-			      #world.set[cell.id].color +1]
-			      
-			   local col = {}
-			   for k, v in pairs(c) do
-			      col[k] = v
-			   end
-			   
-			   col.blink = {255,255,255}
-			   col.time = cell.time
-			   
-			   return col
-   end
-   
-   return {0, 0, 0}
-end
-
-
-function world.image(x, y)
-   local pos = world.pos(x, y)
-   local cell = world.map[pos.x][pos.y]
-   if (cell.see) then
-      local c = 
-         cell.rand % #world.set[cell.id].img
-      return world.set[cell.id].img[c + 1]
-   else
-      return {0, 0, 0}
-   end
 end
 
 function world.objImage(x, y)
@@ -304,6 +265,22 @@ function world.insert(obj, x, y)
       return i
    else
       return 0
+   end
+end
+
+
+function world.setId(x, y, id)
+   world.map[x][y].id = id
+   world.map[x][y].bitmask = -1
+   local search = {
+        {x=0, y=-1},
+        {x=1, y=0},
+        {x=0, y=1},
+        {x=-1, y=0}
+        }
+   for _, n in ipairs(search) do
+      local p = world.pos(x + n.x, y + n.y)
+      world.map[p.x][p.y].bitmask = -1
    end
 end
 
@@ -520,19 +497,20 @@ function world.shift(obj, x, y, t, dist)
 			   local cell = world.map[pos.x][pos.y]
 			   local id = cell.id
 			   
-			   if (world.set[cell.id].hit) then
+			   if (world.set[id].hit) then
 			      local k = world.set[id].key
 			      if k then
 			         if obj.active then
 						         if obj:usekey(k) then
-						            cell.id =
-						               world.set[cell.id].hit
+						            world.setId(pos.x, pos.y,
+			                  world.set[id].hit)
 						         else
 						            obj.message = "I need "..k.."!"
 						         end
 			         end
 			      else
-			         cell.id = world.set[cell.id].hit
+			         world.setId(pos.x, pos.y,
+			            world.set[id].hit)
 			      end
 			   end
 			   
@@ -572,6 +550,8 @@ end
 function world.fademap(n)
 
    n = n or 1
+   
+   local player = world.player.pos
 
    for i=1, n do
 			   local rx = 
@@ -580,17 +560,13 @@ function world.fademap(n)
 			   local ry = love.math.random(
 			      -world.view - 1,  world.view + 1)
 			      
-			   local pos = world.pos(
-			      world.player.pos.x + rx,
-			      world.player.pos.y + ry)
+			   local pos = 
+			      world.pos(player.x + rx, player.y + ry)
 			   
 			   world.map[pos.x][pos.y].see = false
    end
    
-   world.map
-      [world.player.pos.x]
-      [world.player.pos.y].see 
-      = true
+   world.map[player.x][player.y].see  = true
 end
 
 function world.revealmap(t)
