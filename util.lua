@@ -1,5 +1,16 @@
 local util = {}
 
+function util.anchorpoints(w ,width, height)
+
+   x = w.x + width * (w.ax or 0)
+      - w.w * (w.aw or 0)
+   y = w.y + height * (w.ay or 0) 
+      - w.h * (w.ah or 0)
+
+   return x, y
+end
+
+
 function util.copy(t)
    local ct = {}
    for k, v in pairs(t) do

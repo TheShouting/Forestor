@@ -74,7 +74,8 @@ function world.generate()
    world.player.message = "I see forest..."
 end
 
-function world.nextlevel(instigator)
+
+function world.nextlevel(portal, instigator)
 
    if instigator == world.player then
 
@@ -181,47 +182,12 @@ function world.name(x, y)
 end
 
 
--- Get object color for specified position
-function world.objColor(x, y)
-   local pos = world.pos(x, y)
-   local cell = world.map[pos.x][pos.y]
-   if (cell.see) then
-			   if (cell.obj) then
-			      return cell.obj:col()
-			   else
-			      if (cell.prop) then
-			         local col={200, 200, 200}
-			         col.sin = {100,100,100}
-			         col.time = cell.time
-			         return col
-			      end
-			   end
-   end
-   return {0,0,0}
-end
-
-
-function world.propImage(x, y)
+function world.propSprite(x, y)
    local pos = world.pos(x, y)
    local cell = world.map[pos.x][pos.y]
    if (cell.see) then
       if (cell.prop) then
-         return {0, cell.prop.thumb, 0}
-      end
-   end
-   return nil
-end
-
-function world.objImage(x, y)
-   local pos = world.pos(x, y)
-   local cell = world.map[pos.x][pos.y]
-   if (cell.see) then
-      if (cell.obj) then
-         return cell.obj:sprite()
-      else
-         if (cell.prop) then
-            return {0, cell.prop.thumb, 0}
-         end
+         return cell.prop:getSprite()
       end
    end
    return nil
@@ -582,6 +548,23 @@ function world.revealmap(t)
 end
 
 
+function world.loot(container, other)
+   other.loot = container
+end
+
+
+function world.addcorpse(actor)
+
+   local corpse = 
+      objects.dummy("portal", world.loot)
+      
+   corpse.left = actor.left
+   corpse.right = actor.right
+
+end
+
+
+
 -------------------------------------------------
 -- Game update method ---------------------------
 -------------------------------------------------
@@ -614,16 +597,16 @@ function world.iterate(time)
    local actor = world.actor[world.i]
    
    local taken = world.taketurn(actor, time)
-   
+      
    if taken then
       if world.i == 1 then
-        world.flush()
-        world.map[actor.pos.x][actor.pos.y].see
-           = true
-        world.floodview(
-           actor.pos.x, actor.pos.y, world.view)
+         local px = actor.pos.x
+         local py = actor.pos.y
+         world.flush()
+         world.map[px][py].see = true
+         world.floodview(px, py, world.view)
       end
-      
+         
       actor.memdmg = 0
       actor.updateTime = time
       actor.active = false
@@ -631,14 +614,14 @@ function world.iterate(time)
          actor.animation = actor.anim
          actor.anim = {}
       end
-      
+         
       world.i = world.i + 1
-      
+         
       if world.i > #world.actor then
          world.i = 1
       end
+      
    end
-   
 end
 
 
@@ -719,7 +702,7 @@ function world.taketurn(actor, time)
          end
          cell.obj = nil
          table.remove(world.actor, world.i)
-         world.i = world.i - world.i
+         world.i = world.i - 1
       else
          actor.animation = {}
          actor.rot = actor.rot - 1

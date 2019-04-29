@@ -19,22 +19,26 @@ setmetatable(testscene, {
 
 function testscene:_init()
 
-   self.x = 240
-   self.y = 180
-   self.w = 1440
-   self.h = 720
-
-   scene._init(self, 
-     {x=self.x, y=self.y, 
-     w=self.w, h=self.h, input=self.newlevel})
+   scene._init(self)
      
-  self:newlevel()
+     
+   self.x = 240
+   self.y = 240
+   self.w = 1440
+   self.h = 600
+   
+   self:addwidget(
+      {x = self.x, y = self.y, 
+      w = self.w, h = self.h,
+      input = self.newlevel})
+   
+   self:newlevel()
 
 end
 
 function testscene:draw()
 
-   local path = function(x1, y1, x2, y2, threshold)
+   local path = function(x1,y1,x2,y2,threshold)
    
       local count = math.floor(math.min(
          math.abs(x1 - x2), math.abs(y1 - y2)

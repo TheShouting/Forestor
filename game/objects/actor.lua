@@ -66,6 +66,8 @@ end
 function actor:push(other)
    if self.alive then
       other:attack(self)
+   else
+      other.loot = self
    end
 end
 
@@ -241,22 +243,6 @@ function actor:usekey(key)
 end
 
 
-function actor:char()
-   local l = " "
-   local r = " "
-   
-   if (self.left) then
-      l = self.left.char
-   end
-   
-   if (self.right) then
-      r = self.right.char
-   end
-   
-   return l..self.character..r
-end
-
-
 function actor:col()
    local color = {196,0,0}
    if (self.alive) then
@@ -276,33 +262,6 @@ function actor:col()
    color.time = self.time
    return color
 end
-
-
-function actor:sprite()
-   local l = 0
-   local r = 0
-   
-   if self.alive then
-   
-   if self.left then
-      l = self.left.img or 0
-   end
-   
-   if self.right then
-      r = self.right.img or 0
-   end
-   
-   return {r, self.img, l}
-   
-   else
-      if self.corpse then
-         return {0, self.corpse, 0}
-      else
-         return {0, self.img, 0}
-      end
-   end
-end
-
 
 function actor:getName()
    if self.alive then

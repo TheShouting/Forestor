@@ -5,6 +5,7 @@ local imagehandler = require("assets.imagehandler")
 local color = require("assets.color")
 
 local tileset = require("data.tileset")
+local spriteset = require("data.spriteset")
 
 local game = {}
 
@@ -17,26 +18,12 @@ setmetatable(game,{
    end,
 })
 
-function game:_init(vx, vy, vw, vh, world)
-   self.x = vx
-   self.y = vy
-   self.w = vw
-   self.h = vh
-			--self.tilew = 30
-			--self.tileh = 60
-			
-			
-			self.scale = 4
-			self.dw = math.ceil(vw / self.scale)
-			self.dh = math.ceil(vh / self.scale)
-			self.canvas = 
-			   love.graphics.newCanvas(self.dw, self.dh)
-			self.canvas:setFilter( "linear", "nearest" )
+function game:_init(world)
 			self.off = {x = 1, y = 1 }
 			self.range = 4
 			self.world = world
 			   
-			self.handler = imagehandler("ground")
+			self.handler = imagehandler(tileset, spriteset)
 			   
 end
 
@@ -61,10 +48,7 @@ function game:update(dt)
 
 end
 
-function game:draw()
-
-   love.graphics.setCanvas(self.canvas)
-   love.graphics.clear(0, 0, 0)
+function game:draw(view_w, view_h)
 
    local actors = {}
 
@@ -73,8 +57,8 @@ function game:draw()
    local tw = tileset.width
    local th = tileset.height
    
-   local vw = math.floor((self.dw/tw) * 0.5) + 1
-   local vh = math.floor((self.dh/th) * 0.5) + 1
+   local vw = math.floor((view_w / tw) * 0.5) + 1
+   local vh = math.floor((view_h / th) * 0.5) + 1
    
    
    local worldw = self.world.width
@@ -86,16 +70,16 @@ function game:draw()
 			px = (px+worldw*0.5) % worldw - worldw*0.5
 			py = (py+worldh*0.5) % worldh - worldh*0.5
 			
-			px = px * tw + self.dw * 0.5
-   py = py * th + self.dh * 0.5
+			px = px * tw + view_w * 0.5
+   py = py * th + view_h * 0.5
    
    love.graphics.setColor(60, 70, 40)
    love.graphics.circle("fill", 
-      px + tw*0.5, py + th*0.5, tw * 4)
+      px, py - th * 0.5, tw * 4)
       
    love.graphics.setColor(120, 140, 80)
    love.graphics.circle("fill", 
-      px + tw*0.5, py + th*0.5, tw * 1)
+      px, py - th * 0.5, tw * 1)
    
    for x=1, vw*2 do
       for y=1, vh*2 do
@@ -104,8 +88,8 @@ function game:draw()
          local wy = self.off.y + y - vh
          --local char = self.world.char(wx, wy)
          
-         local cx = (x - vw) * tw + self.dw * 0.5
-         local cy = (y - vh) * th + self.dh * 0.5
+         local cx = (x - vw) * tw + view_w * 0.5
+         local cy = (y - vh) * th + view_h * 0.5
          
          local r = wx * wy *
             (self.world.random(wx, wy) / 100)
@@ -126,7 +110,7 @@ function game:draw()
             
             col.time = ctime
             if state == "hit" then
-               col.blink = {210, 180, 120}
+               col.blink = {255,255,255}
             elseif state == "walk" then
                col.blink = {255,255, 255}
             end
@@ -140,12 +124,18 @@ function game:draw()
             self.handler:drawtile(cx, cy,
                tile, bitmask, r, 1)
             
-            if self.world.propImage(wx, wy) then
+            local prop =
+               self.world.propSprite(wx, wy)
+            if prop then
                love.graphics.setColor(
                   255,255,255)
-               love.graphics.rectangle(
-   			            "fill", cx+tw*0.25, cy+th*0.25,
-   			            tw*0.5, th*0.5)
+
+               local sprite = spriteset[prop]
+			            self.handler:drawsprite(
+			               cx, cy, sprite, "ground")
+               --love.graphics.rectangle(
+   			         --   "fill", cx-tw*0.25, cy-th*0.5,
+   			          --  tw*0.5, th*0.5)
             end
             
             -- collate actors
@@ -155,15 +145,26 @@ function game:draw()
 			         end
 			      else
 			         love.graphics.setColor(0, 0, 0)
-			         love.graphics.rectangle(
-   			         "fill", cx, cy, tw, th)
+			         love.graphics.rectangle("fill", 
+   			         cx - tw * 0.5, cy - th, 
+   			         tw, th)
          end
       end
    end
    
    -- Draw all visible actors on top of map
    for _, a in pairs(actors) do
-      local ax = a.pos.x
+      
+			   self:drawActor(a, th, tw, view_w, view_h)
+   end
+   
+end
+
+function game:drawActor(a, th, tw, vw, vh)
+
+   local timer = love.timer.getTime()
+
+   local ax = a.pos.x
       local ay = a.pos.y
       local bx = ax
       local by = ay
@@ -217,26 +218,36 @@ function game:draw()
 				  ax = (ax+worldw*0.5) % worldw - worldw*0.5
 				  ay = (ay+worldh*0.5) % worldh - worldh*0.5
 				  
-				  ax = ax * tw + self.dw * 0.5
-      ay = ay * th + self.dh * 0.5
+				  ax = ax * tw + vw * 0.5
+      ay = ay * th + vh * 0.5
       
       local o = a.pos.x * a.pos.y *
          self.world.random(a.pos.x, a.pos.y)*0.01
       local ac = 
          util.processcolor(a:col(), timer, o)
       love.graphics.setColor(ac)
+      
+      local sprite = spriteset[a:getSprite()]
+      if sprite then
+			      self.handler:drawsprite(ax, ay,
+            sprite, "idle", 1)
+      else
+			      love.graphics.circle("fill", 
+			         ax, ay - th*0.5, tw * 0.25)
+			   end
 			   
+			   local r = a.right
+			   local l = a.left
 			   
-			   love.graphics.circle("fill", 
-			      ax + tw*0.5, ay + th*0.5, tw * 0.25)
-   end
-   
-   -- Draw canvas
-   love.graphics.setCanvas()
-   love.graphics.setColor(255,255,255)
-   love.graphics.draw(
-      self.canvas, self.x, self.y, 0, self.scale)
-   
+			   if r then
+			      local prop = spriteset[r:getSprite()]
+			      self.handler:drawsprite(ax-tw/2,ay,prop, "hand")
+			   end
+			   
+			   if l then
+			      local prop = spriteset[l:getSprite()]
+			      self.handler:drawsprite(ax+tw/2,ay,prop, "hand")
+			   end
 end
 
 return game

@@ -22,11 +22,15 @@ setmetatable(menuscene, {
 
 function menuscene:_init()
 
-   scene._init(self, 
-     button("NEW GAME", self.newgame, 1200, 500),
-     button("CONTINUE", self.loadgame, 1200, 650),
-     button("QUIT", self.quitgame, 1200, 800),
-     button("test", self.test, 200, 800))
+   scene._init(self,
+     button("NEW GAME", self.newgame,
+        4, -4, 128, 32, 0, 1, 0, 1),
+     button("QUIT", self.quitgame, 
+        0, -4, 128, 32, 0.5, 1, 0.5, 1),
+     button("CONTINUE", self.loadgame, 
+        -4, -4, 128, 32, 1, 1, 1, 1),
+     button("test", self.test, 
+        4, 128, 128, 32))
      
    self.title =
       love.graphics.newImage(
@@ -44,7 +48,7 @@ function menuscene:draw()
       v)
    love.graphics.setColor(col)
    
-   love.graphics.draw(self.title, 200, 240, 0, 2, 2, 0, 0)
+   love.graphics.draw(self.title, 40, 40)
 end
 
 function menuscene:newgame()

@@ -101,15 +101,8 @@ function entity:col()
 end
 
 
-function entity:sprite()
-   if self.img then
-      return {
-         self.imgr or 0, 
-         self.img, 
-         self.imgl or 0
-         }
-   end
-   return {0, 1, 0}
+function entity:getSprite()
+   return self.sprite or "blank"
 end
 
 

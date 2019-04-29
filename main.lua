@@ -9,15 +9,16 @@ local scene = require("scene.menuscene")
 -------------------------------------------------
 
 local app = nil
+local scale = 4
 
 function love.load()
 
    local imgf = love.graphics.newImageFont(
-      "woods_font-large.png", 
+      "woods_font_1x.png", 
       " abcdefghijklmnopqrstuvwxyz"..
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ"..
-      "1234567890!@#$%^&*()-="..
-      "[]\\;'.,/`_+{}|:\"<>?~"
+      "1234567890-=!@#$%^&*()_+"..
+      "[]\\;'.,/{}|:\"<>?`~", 1
       )
    love.graphics.setFont(imgf)
 

@@ -35,18 +35,8 @@ function prop:_init(id)
 end
 
 
-function prop:color()
-   return {255, 255, 255, sin={128, 128, 128}}
-end
-
-
-function prop:col()
-   return {255, 255, 255, sin={128, 128, 128}}
-end
-
-
-function prop:sprite()
-   return {0, img, 0}
+function prop:getSprite()
+   return self.sprite or "blank"
 end
 
 

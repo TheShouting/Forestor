@@ -21,7 +21,7 @@ end
 function dummy:push(other)
    -- empty method
    if self.action then
-      self.action(other)
+      self.action(self, other)
    end
 end
 

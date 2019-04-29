@@ -19,11 +19,6 @@ function hud:_init(vx, vy, vw, vh, actor)
    self.timer = 0.0
    self.actor = actor
    
-   self.img = love.graphics.newImage(
-      "assets/img/heart.png")
-   self.img:setFilter( "linear", "nearest" )
-   
-   self.scale = 2
 end
 
 function hud:update(dt)
@@ -31,41 +26,31 @@ function hud:update(dt)
 end
 
 
-function hud:draw()
+function hud:draw(view_w, view_h)
 
+   love.graphics.setColor(255, 255, 255)
+   
    local f = love.graphics.getFont()
-
+   local center = view_w * 0.5
    if self.actor.message then
       local msg = self.actor.message
-      local mw = f:getWidth(msg) * 0.5
-      love.graphics.print(msg, self.w*0.5-mw, 10)
+      local mw = math.floor(f:getWidth(msg) * 0.5)
+      love.graphics.print(msg, center-mw, 10)
    end
 
-
-   local hpsize = 36 * self.scale
    local hp = self.actor.hp
-   love.graphics.setColor(255,0,0)
-   for i = 1, hp do
-      local x = i * hpsize + self.x
-      local y = self.h - hpsize
-      love.graphics.draw(self.img, x, y, 0,
-         self.scale, self.scale)
-   end
+   
+   love.graphics.print(hp, center, view_h - 18)
    
    
-   if self.actor.memdmg ~= 0 then
-      local col = {0,0,0}
-      col.fade = {255, 255, 255}
-      col.time = self.actor.updateTime
-      col = util.processcolor(col, 
-         love.timer.getTime())
-      love.graphics.setColor(col)
-      
-      local x = (self.actor.hp + 1) * hpsize
-      local y = self.h - hpsize
-      love.graphics.print(self.actor.memdmg, 
-         x, y)
-   end
+   local right = self.actor.right and self.actor.right:stats() or "[EMPTY]"
+   
+   love.graphics.print(right, 4, view_h - 18)
+   
+   local left = self.actor.left and self.actor.left:stats() or "[EMPTY]"
+   local x = view_w - (f:getWidth(left) + 4)
+   love.graphics.print(left, x, view_h - 18)
+   
 end
 
 return hud
