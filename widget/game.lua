@@ -73,13 +73,10 @@ function game:draw(view_w, view_h)
 			px = px * tw + view_w * 0.5
    py = py * th + view_h * 0.5
    
-   love.graphics.setColor(60, 70, 40)
+   love.graphics.setColor(45, 30, 20)
    love.graphics.circle("fill", 
       px, py - th * 0.5, tw * 4)
       
-   love.graphics.setColor(120, 140, 80)
-   love.graphics.circle("fill", 
-      px, py - th * 0.5, tw * 1)
    
    for x=1, vw*2 do
       for y=1, vh*2 do
@@ -127,6 +124,10 @@ function game:draw(view_w, view_h)
             local prop =
                self.world.propSprite(wx, wy)
             if prop then
+            
+               love.graphics.setColor(0,0,0)
+               love.graphics.circle("fill", 
+			               cx, cy - th*0.5, tw * 0.5)
                love.graphics.setColor(
                   255,255,255)
 
@@ -221,6 +222,10 @@ function game:drawActor(a, th, tw, vw, vh)
 				  ax = ax * tw + vw * 0.5
       ay = ay * th + vh * 0.5
       
+      love.graphics.setColor(0, 0, 0)
+      love.graphics.circle("fill", 
+			         ax, ay - th*0.5, tw * 0.5)
+      
       local o = a.pos.x * a.pos.y *
          self.world.random(a.pos.x, a.pos.y)*0.01
       local ac = 
@@ -241,12 +246,12 @@ function game:drawActor(a, th, tw, vw, vh)
 			   
 			   if r then
 			      local prop = spriteset[r:getSprite()]
-			      self.handler:drawsprite(ax-tw/2,ay,prop, "hand")
+			      self.handler:drawsprite(ax+tw/2,ay,prop, "hand")
 			   end
 			   
 			   if l then
 			      local prop = spriteset[l:getSprite()]
-			      self.handler:drawsprite(ax+tw/2,ay,prop, "hand")
+			      self.handler:drawsprite(ax-tw/2,ay,prop, "hand")
 			   end
 end
 

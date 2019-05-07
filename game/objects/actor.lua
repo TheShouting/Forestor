@@ -46,15 +46,6 @@ function actor:pickup(cell)
 			   self.message = "There's nothing there."
    end
    
-   local kbl = 0
-   local kbr = 0
-   if self.right then
-      kbr = self.right.knockback or 0
-   end
-   if self.left then
-      kbl = self.left.knockback or 0
-   end
-   self.knockback = math.max(kbr, kbl)
 end
 
 

@@ -48,6 +48,7 @@ portal = {
    name = "a touchstone",
    character = "$",
    color = {255, 128, 255, ember={255, 255, 255}},
+   sprite = "portal",
    img = 8,
    }
 }
@@ -81,6 +82,7 @@ shield = {
    name = "shield",
    char = "\\",
    img = 17,
+   sprite = "shield",
    thumb = 18,
    hand = "left",
    key = nil,
@@ -107,9 +109,19 @@ hammer={
    hand = "right",
    dmg = 1,
    req=4,
-   knockback = 2,
+   knockback = 2
+   },
+club={
+   name= "club",
+   char= "7",
+   img = 13,
+   sprite = "hammer",
+   thumb = 14,
+   hand = "right",
+   dmg = 2,
+   req=4,
    hit = function(self, owner, other)
-         other:setstatus("stun", 1)
+         other:setstatus("stun", 2)
       end
    }
 }

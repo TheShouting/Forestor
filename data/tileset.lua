@@ -3,143 +3,103 @@ local tileset = {
    height = 16,
    
    tree = {
-      bitmask = true,
-      sheet = "trees",
+      bitmask = false,
+      sheet = "kenney",
       images = {
-         {64, 96, 16, 32},
-         {64, 64, 16, 32},
-         {0, 96, 16, 32},
-         {0, 64, 16, 32},
-         {64, 0, 16, 32},
-         {64, 32, 16, 32},
-         {0, 0, 16, 32},
-         {0, 32, 16, 32},
-         {32, 96, 16, 32},
-         {32, 64, 16, 32},
-         {16, 96, 16, 32},
-         {16, 64, 16, 32},
-         {32, 0, 16, 32},
-         {32, 32, 16, 32},
-         {16, 0, 16, 32},
-         {16, 32, 16, 32}
+         {0, 17, 16, 16},
+         {17, 17, 16, 16},
+         {34, 17, 16, 16},
+         {51, 17, 16, 16},
+         {68, 17, 16, 16},
          },
       color = "default"
    },
    
    stump = {
-      sheet = "ground",
+      sheet = "kenney",
       images = {
-         {176, 32, 16, 16}
+         {102, 34, 16, 16}
          },
       color = "warm"
    },
    
    path = {
-      sheet = "ground",
+      sheet = "kenney",
       images = {
-         {128, 32, 16, 16},
-         {144, 32, 16, 16},
-         {160, 32, 16, 16}
+         {51, 0, 16, 16},
+         {68, 0, 16, 16}
          },
       color = "cool"
    },
    
    dirt = {
-      sheet = "ground",
+      sheet = "kenney",
       images = {
-         {176, 0, 16, 16}
+         {0, 0, 16, 16}
          },
-      color = "default"
+      color = "warm"
    },
 
    grass = {
-      sheet = "ground",
+      sheet = "kenney",
       images = {
-         {128, 16, 16, 16},
-         {144, 16, 16, 16},
-         {160, 16, 16, 16}
+         {85, 0, 16, 16},
+         {102, 0, 16, 16},
+         {119, 0, 16, 16}
          },
       color = "default"
    },
    
    tallgrass = {
-      bitmask = true,
-      sheet = "ground",
+      bitmask = false,
+      sheet = "kenney",
       images = {
-         {48, 112, 16, 16},
-         {48, 96, 16, 16},
-         {0, 112, 16, 16},
-         {0, 96, 16, 16},
-         {48, 64, 16, 16},
-         {48, 96, 16, 16},
-         {0, 64, 16, 16},
-         {0, 96, 16, 16},
-         {32, 112, 16, 16},
-         {32, 96, 16, 16},
-         {16, 112, 16, 16},
-         {16, 96, 16, 16},
-         {32, 64, 16, 16},
-         {32, 96, 16, 16},
-         {16, 64, 16, 16},
-         {16, 96, 16, 16}
+         {0, 34, 16, 16}
          },
       color = "warm"
    },
    
    blank = {
-      sheet = "ground",
+      sheet = "kenney",
       images = {
-         {176, 0, 16, 16}
+         {0, 0, 16, 16}
          },
       color = "default"
    },
    
    doorclose = {
-      sheet = "ground",
+      sheet = "kenney",
       images = {
-         {128, 0, 16, 16}
+         {51, 153, 16, 16}
          },
-      color = "default"
+      color = "highlight"
    },
    
    dooropen = {
-      sheet = "ground",
+      sheet = "kenney",
       images = {
-         {144, 0, 16, 16}
+         {34, 153, 16, 16}
          },
-      color = "default"
+      color = "highlight"
    },
    
    doorlocked = {
-      sheet = "ground",
+      sheet = "kenney",
       images = {
-         {160, 0, 16, 16}
+         {0, 153, 16, 16}
          },
-      color = "default"
+      color = "highlight"
    },
    
    wall = {
-      bitmask = true,
-      sheet = "ground",
+      bitmask = false,
+      sheet = "kenney",
       images = {
-         {112, 48, 16, 16},
-         {112, 32, 16, 16},
-         {64, 48, 16, 16},
-         {64, 32, 16, 16},
-         {112, 0, 16, 16},
-         {112, 16, 16, 16},
-         {64, 0, 16, 16},
-         {64, 16, 16, 16},
-         {96, 48, 16, 16},
-         {96, 32, 16, 16},
-         {80, 48, 16, 16},
-         {80, 32, 16, 16},
-         {96, 0, 16, 16},
-         {96, 16, 16, 16},
-         {80, 0, 16, 16},
-         {80, 16, 16, 16}
+         {170, 289, 16, 16},
+         {102, 221, 16, 16},
+         {119,  255, 16, 16}
          },
-      color = "default"
+      color = "highlight"
    }
 
 }

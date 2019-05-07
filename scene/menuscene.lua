@@ -24,11 +24,11 @@ function menuscene:_init()
 
    scene._init(self,
      button("NEW GAME", self.newgame,
-        4, -4, 128, 32, 0, 1, 0, 1),
+        4, -4, 96, 32, 0, 1, 0, 1),
      button("QUIT", self.quitgame, 
-        0, -4, 128, 32, 0.5, 1, 0.5, 1),
+        0, -4, 96, 32, 0.5, 1, 0.5, 1),
      button("CONTINUE", self.loadgame, 
-        -4, -4, 128, 32, 1, 1, 1, 1),
+        -4, -4, 96, 32, 1, 1, 1, 1),
      button("test", self.test, 
         4, 128, 128, 32))
      

@@ -1,73 +1,92 @@
 local spriteset = {
 
    blank = {
-      sheet = "objects",
+      sheet = "kenney",
       color = "highlight",
       idle = {
-         {0, 0, 16, 32}
+         {357, 425, 16, 16}
          },
       ground = {
-         {0, 0, 16, 32}
+         {357, 425, 16, 16}
          },
       hand = {
-         {0, 0, 16, 32}
+         {357, 425, 16, 16}
+         }
+      },
+   portal = {
+      sheet = "kenney",
+      color = "highlight",
+      framerate = 0.1,
+      idle = {
+         {238, 170, 16, 16}
          }
       },
    player = {
-      sheet = "objects",
+      sheet = "kenney",
       color = "highlight",
       framerate = 0.1,
       idle = {
-         {16, 0, 16, 32}
+         {408, 0, 16, 16}
          }
       },
    goblin = {
-      sheet = "objects",
+      sheet = "kenney",
       color = "highlight",
       framerate = 0.1,
       idle = {
-         {32, 0, 16, 32}
+         {493, 34, 16, 16}
          }
       },
    potion = {
-      sheet = "objects",
+      sheet = "kenney",
       color = "highlight",
       framerate = 0.1,
       ground = {
-         {0, 32, 16, 32}
+         {272, 425, 16, 32}
          }
       },
    sword = {
-      sheet = "objects",
+      sheet = "kenney",
       color = "highlight",
       framerate = 0.1,
       ground = {
-         {32, 32, 16, 32}
+         {34, 476, 16, 16}
          },
       hand = {
-         {32, 64, 16, 32}
+         {34, 476, 16, 16}
          }
       },
    axe = {
-      sheet = "objects",
+      sheet = "kenney",
       color = "highlight",
       framerate = 0.1,
       ground = {
-         {48, 32, 16, 32}
+         {170, 493, 16, 16}
          },
       hand = {
-         {64, 64, 16, 32}
+         {170, 493, 16, 16}
          }
       },
    hammer = {
-      sheet = "objects",
+      sheet = "kenney",
       color = "highlight",
       framerate = 0.1,
       ground = {
-         {64, 32, 16, 32}
+         {85, 493, 16, 16}
          },
       hand = {
-         {48, 64, 16, 32}
+         {85, 493, 16, 16}
+         }
+      },
+   shield = {
+      sheet = "kenney",
+      color = "highlight",
+      framerate = 0.1,
+      ground = {
+         {119, 408, 16, 16}
+         },
+      hand = {
+         {119, 408, 16, 16}
          }
       }
 

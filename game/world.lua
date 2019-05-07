@@ -450,7 +450,7 @@ function world.shift(obj, x, y, t, dist)
 
    local anim = {
 			      pos = {x=obj.pos.x, y=obj.pos.y},
-			      dir = {x=x*dist, y=y*dist}, 
+			      dir = {x=x, y=y}, 
 			      lerp = "bump"
 			      }
 			         
@@ -492,6 +492,7 @@ function world.shift(obj, x, y, t, dist)
 			         cell.state = "walk"
 			         anim.lerp = 
 			            obj.active and "step" or "slide"
+			         anim.dir = {x=x*i, y=y*i}
 			         
 			         if cell.prop then
 			            if cell.prop.auto then
@@ -499,7 +500,7 @@ function world.shift(obj, x, y, t, dist)
 			            end
 			         end
 			      else
-			         return hit
+			         return hit, i-1
 			      end
 			   else
 			      if cell.prop and obj.active then
@@ -507,10 +508,10 @@ function world.shift(obj, x, y, t, dist)
 			      end
 			      cell.time = t
 			      cell.state = "hit"
-			      return nil
+			      return true, i-1
 			   end
    end
-   return nil
+   return nil, dist
 end
 
 function world.fademap(n)
@@ -628,19 +629,28 @@ end
 
 function world.taketurn(actor, time)
 
+   -- get knockback from actors equipment
+   local rkb = 0
    if actor.right then
       if actor.right.integrity <= 0 then
          actor.right = nil
+      else
+         rkb = actor.right.knockback or 0
       end
    end
    
+   local lkb = 0
    if actor.left then
       if actor.left.integrity <= 0 then
          actor.left = nil
+      else
+         lkb = actor.left.knockback or 0
       end
    end
    
+   actor.knockback = math.max(rkb, lkb)
    
+   -- update actor
    local cell = 
       world.map[actor.pos.x][actor.pos.y]
    if (actor.alive) then
@@ -667,17 +677,24 @@ function world.taketurn(actor, time)
             actor.anim[#actor.anim + 1] = anim
          end
       else
-         local other = 
+         local other, _ = 
             world.shift(actor,move.x,move.y,time)
-         if other and actor.active then
+         if type(other) == "table" 
+            and actor.active then
             other:push(actor)
             other.time = time
-            if actor.knockback then
+            
+            -- knock back pushed actor
+            if actor.knockback > 0 then
                if other.alive and 
                   not other.heavy then
-                  world.shift(other, 
+                  local _, d =
+                     world.shift(other, 
                      move.x, move.y, 
                      time, actor.knockback)
+                  if d > 0 then
+                     other:setstatus("stun", 1)
+                  end
                end
             end
          end

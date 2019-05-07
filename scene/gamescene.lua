@@ -2,7 +2,6 @@ local scene = require("scene.scene")
 local game = require("widget.game")
 local hud = require("widget.hud")
 local button = require("widget.button")
-local slot = require("widget.slot")
 local lootmenu = require("scene.lootscene")
 
 local gamescene = {}
