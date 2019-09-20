@@ -2,6 +2,7 @@ local scene = require("scene.scene")
 local widget = require("widget.widget")
 
 local levelgen = require("gen.levelgen")
+local tools = require("gen.tools")
 
 local util = require("util")
 
@@ -22,10 +23,15 @@ function testscene:_init()
    scene._init(self)
      
      
-   self.x = 240
-   self.y = 240
-   self.w = 1440
-   self.h = 600
+   self.min = 64
+   self.max = 128
+   
+   local border = 16
+   
+   self.x = border
+   self.y = border
+   self.w = self.width - border * 2
+   self.h = self.height - border * 2
    
    self:addwidget(
       {x = self.x, y = self.y, 
@@ -33,47 +39,15 @@ function testscene:_init()
       input = self.newlevel})
    
    self:newlevel()
-
 end
 
 function testscene:draw()
-
-   local path = function(x1,y1,x2,y2,threshold)
-   
-      local count = math.floor(math.min(
-         math.abs(x1 - x2), math.abs(y1 - y2)
-         ) / threshold)+1
-      
-      local xdist = (x2 - x1) / count
-      local ydist = (y2 - y1) / count
-      
-      local startx = x1
-      local starty = y1
-   
-      for i=0, count-1 do
-      
-         x1 = startx + xdist * i
-         y1 = starty + ydist * i
-         x2 = x1 + xdist
-         y2 = y1 + ydist
-   
-         --if math.abs(x1 - x2) >
-         --   math.abs(y1 - y2) then
-            love.graphics.line(x1, y1, x1, y2)
-            love.graphics.line(x1, y2, x2, y2)
-         --else
-            love.graphics.line(x1, y1, x2, y1)
-            love.graphics.line(x2, y1, x2, y2)
-         --end
-      end
-   end
 
    love.graphics.setColor(64, 64, 64)
    love.graphics.rectangle("line", 
       self.x, self.y, self.w, self.h)
    love.graphics.line(0, 540, 1920, 540)
    love.graphics.line(960, 0, 960, 1080)
-
 
    for ox = -1, 1 do
       for oy = -1, 1 do
@@ -89,9 +63,10 @@ function testscene:draw()
             local y = node.y + py
          
             love.graphics.setColor(32, 32, 32)
-            love.graphics.circle("line",x,y,100)
+            love.graphics.circle(
+               "line", x, y, self.min/2)
             love.graphics.setColor(255, 255, 255)
-            love.graphics.circle("fill",x,y,10)
+            love.graphics.circle("fill",x,y,4)
             
             love.graphics.print(i, x+5, y+5)
             
@@ -124,7 +99,6 @@ function testscene:draw()
                   end
                   
                   
-                  path(x,y,nx,ny, 100)
                   love.graphics.line(x,y,nx,ny)
                   
                   end
@@ -134,17 +108,17 @@ function testscene:draw()
          love.graphics.setColor(255, 0, 0)
          local ex = self.endpoint.x + px
          local ey = self.endpoint.y + py
-         love.graphics.circle("line",ex,ey,30)
+         love.graphics.circle("line",ex,ey, 10)
          love.graphics.print(self.dist, 
-            ex - 80, ey - 80)
+            ex + 5, ey - 21)
             
          love.graphics.setColor(0, 255, 0)
-         love.graphics.circle("line",px,py,30)
+         love.graphics.circle("line",px,py,8)
          
          love.graphics.setColor(0, 0, 255)
          local lx = self.last.x + px
          local ly = self.last.y + py
-         love.graphics.circle("line",lx,ly,20)
+         love.graphics.circle("line",lx,ly,10)
          
          
       end
@@ -159,7 +133,7 @@ function testscene:newlevel()
    self.level =
       --levelgen.makeLevel(self.w,self.h,8,8,rng)
       levelgen.brids(self.w, self.h, 
-      20, 1000, 200, 350, rng)
+      20, 100, self.min, self.max, rng)
    
    
    local ep, d = levelgen.getFarthest(self.level)
