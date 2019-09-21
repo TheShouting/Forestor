@@ -75,7 +75,7 @@ function scene:presskey(key)
 		for i, w in ipairs(self.widgets) do
 			if w.input then
 				if w.key == key then
-					self.debugmsg = key
+					--self.debugmsg = key
 					w.input(self)
 				end
 			end
@@ -86,6 +86,20 @@ end
 
 function scene:goprevious()
 	self.newscene = self.previousscene
+end
+
+
+function scene:goback()
+	if self.subscene then
+		self.subscene:goback()
+	else
+		if self.parent then
+			self.parent.subscene = nil
+			if self.quit then self:quit() end
+		else
+			self:goprevious()
+		end
+	end
 end
 
 
@@ -161,7 +175,7 @@ function scene:drawScene()
 	
 	if self.debugmsg then
 		love.graphics.setColor(255,0,0)
-		love.graphics.print(self.debugmsg, 10, 50)
+		love.graphics.print(self.debugmsg, 10, 16)
 	end
 
 	-- Draw canvas

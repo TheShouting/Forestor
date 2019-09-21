@@ -53,14 +53,17 @@ function gamescene:update(dt)
 	self.world.update(t)
 
 	if self.world.player.loot then
-		self:addsubscene(
-			lootmenu(self.world.player))
+		self:addsubscene(lootmenu(self.world.player))
 		return
 	end
 
 	self.game:update(dt)
 	self.hud:update(dt)
 
+end
+
+function gamescene:quit()
+	
 end
 
 function gamescene:draw()

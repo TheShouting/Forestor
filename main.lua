@@ -37,18 +37,19 @@ function love.touchreleased(id, x, y, pressure)
 end
 
 function love.keypressed(key, scancode, isrepeat)
+	--app.debugmsg = key
 	if key == "escape" then
-		app:goprevious()
+		app:goback()
 	else
 		app:presskey(key)
 	end
-	
 end
 
 function love.update(dt)
 	local nextapp = app:updateScene(dt)
 	if nextapp then
 		if nextapp ~= app then
+			if app.quit then app:quit() end
 			app = nextapp
 			app.newscene = app
 		end
