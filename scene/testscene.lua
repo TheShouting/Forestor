@@ -57,7 +57,8 @@ function testscene:draw()
 				local y = node.y + py
 
 				love.graphics.setColor(32, 32, 32)
-				love.graphics.circle("line", x, y, self.min/2)
+				--love.graphics.circle("line", x, y, self.min/2)
+				love.graphics.rectangle("line", x - node.size / 2, y - node.size / 2, node.size, node.size)
 				love.graphics.setColor(255, 255, 255)
 				love.graphics.circle("fill",x,y,4)
 
@@ -112,7 +113,7 @@ function testscene:newlevel()
 	local seed = love.timer.getTime()
 	local rng = love.math.newRandomGenerator(seed)
 	self.level = levelgen.brids(self.w, self.h, 8, 200, self.min, self.max, rng)
-	--self.level = levelgen.brids2(self.w, self.h, 5, 500, self.min, self.max, rng)
+	--self.level = levelgen.brids2(self.w, self.h, 5, 20, self.min, self.max, rng)
 	--levelgen.makeLevel(self.w,self.h,8,8,rng)
 	--self.level = levelgen.partition(self.w, self.h, 100, self.min, rng)
 

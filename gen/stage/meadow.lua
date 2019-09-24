@@ -4,8 +4,8 @@ local meadow = {
    ... --meta-fields here 
    } 
    
-meadow.meadow = function(map, path, x, y, rng, key) 
-   local rad = rng:random()*3 + 2
+meadow.meadow = function(map, path, x, y, rad, rng, key)
+   local rad = rng:random(2, rad)
    
    local rpos = math.floor(rad)
    
@@ -24,8 +24,8 @@ meadow.meadow = function(map, path, x, y, rng, key)
 end 
 
 setmetatable(meadow, { 
-   __call = function(_, map, x, y, rng, key) 
-      return meadow.meadow(map, x, y, rng, key)
+   __call = function(_, map, x, y, rad, rng, key) 
+      return meadow.meadow(map, x, y, rad, rng, key)
    end 
    }) 
    

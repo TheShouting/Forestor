@@ -1,10 +1,10 @@
 local tools = require("gen.tools")
 
-local room = { 
-   ... --meta-fields here 
-   } 
+local room = {
+   ... --meta-fields here
+   }
    
-room.room = function(map, path, x, y, rng, key) 
+room.room = function(map, path, x, y, rad, rng, key)
    local w = rng:random(2, 4)
    local h = rng:random(2, 4)
    
@@ -26,9 +26,9 @@ room.room = function(map, path, x, y, rng, key)
    
    for x = 1, room.w do
       for y = 1, room.h do
-         local px = 
+         local px =
             (x + rx + map.w - 1) % map.w + 1
-         local py = 
+         local py =
             (y + ry + map.h - 1) % map.h + 1
          if x == 1 or x == room.w or
             y == 1 or y == room.h then
@@ -41,12 +41,12 @@ room.room = function(map, path, x, y, rng, key)
    
    return keyobject
    
-end 
+end
 
-setmetatable(room, { 
-   __call = function(_, map, x, y, rng, key) 
-      return room.room(map, x, y, rng, key)
-   end 
-   }) 
+setmetatable(room, {
+   __call = function(_, map, x, y, rad, rng, key)
+      return room.room(map, x, y, rad, rng, key)
+   end
+   })
    
 return room

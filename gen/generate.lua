@@ -34,10 +34,10 @@ end
 
 
 local run = function(world)
-	-- 1. place points of interests 
+	-- 1. place points of interests
 	--    (keys, locks, containers, etc)
 
-	-- 2. draw path to objective (designate areas 
+	-- 2. draw path to objective (designate areas
 	--    that cannot be blocked)
 
 	-- 3. make biome
@@ -56,7 +56,8 @@ local run = function(world)
 	--local level = levelgen.makeLevel(
 	--   world.width, world.height, 6, 3, rng)
 
-	local level = levelgen.brids(world.width, world.height, 8, 200, 12, 16, rng)
+	local min_radius = 10
+	local level = levelgen.brids(world.width, world.height, 8, 20, min_radius, 16, rng)
 
 	-- create biome
 	local map, path = biome.forest(level, rng)
@@ -108,7 +109,7 @@ local run = function(world)
 			end
 		end
 		r = rng:random(#stg)
-		stg[r](map, path, n.x, n.y, rng, false)
+		stg[r](map, path, n.x, n.y, math.ceil(n.size / 2), rng, false)
 	end
 
 	map[level[levelend].x][level[levelend].y] = "portal"

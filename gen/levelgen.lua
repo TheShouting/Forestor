@@ -8,11 +8,19 @@ local distanceSqr = function(x1, y1, x2, y2, w, h)
 end
 
 
+local distanceaxis = function(x1, y1, x2, y2, w, h)
+	local dx = math.min(math.abs(x2-x1), w - math.abs(x2-x1))
+	local dy = math.min(math.abs(y2-y1), h - math.abs(y2-y1))
+	return dx, dy
+end
+
+
 local wrap = function(x, y, w, h)
 	x = (x + w - 1) % w + 1
 	y = (y + h - 1) % h + 1
 	return x, y
 end
+
 
 local wrap1 = function(x, w)
 	x = (x + w - 1) % w + 1
@@ -41,11 +49,34 @@ local makenearpoint = function(x, y, minr, maxr, rng)
 
 	x = x + util.round(math.cos(a) * rad )
 	y = y + util.round(math.sin(a) * rad )
-	
-	--x = util.round(math.cos(a) * minr) + x
-	--y = util.round(math.sin(a) * minr) + x
 
 	return x, y
+end
+
+
+local makemanhattenpoint = function(x, y, minr, maxr, rng)
+	
+	local angle = rng:random() * 2 * math.pi
+	
+    local abs_cos_angle = math.abs(math.cos(angle))
+    local abs_sin_angle = math.abs(math.sin(angle))
+    
+    local magmin = 0
+    local magmax = 0
+    if abs_sin_angle <= abs_cos_angle then
+        magmin = minr / abs_cos_angle
+        magmax = maxr / abs_cos_angle
+    else
+        magmin = minr / abs_sin_angle
+        magmax = maxr / abs_sin_angle
+    end
+    
+	local range = rng:random() * (magmax - magmin) + magmin
+
+	local distx = math.cos(angle) * range
+	local disty = math.sin(angle) * range
+
+	return util.round(x + distx), util.round(y + disty)
 end
 
 
@@ -143,7 +174,9 @@ local brids = function(w, h, child, samples, min, max, rng)
 	--1. Pick a random point that's already been placed
 	--2. Pick a random sample that's near the random point.
 	
-	local tree = { {x=1, y=1, neighbors={}} }
+	
+	
+	local tree = { {x=1, y=1, size = min, neighbors={}} }
 	local available = {1}
 	local debug = {}
 	
@@ -154,28 +187,37 @@ local brids = function(w, h, child, samples, min, max, rng)
 
 		local found = true
 		
-		local max_dist = 0
-
-		local itr = 0
+		--local max_dist = 10000000
 		
 		for i = 1, samples do
-			itr = itr + 1
-
-			local nx, ny = makenearpoint(tree[parent].x, tree[parent].y, min, max, rng)
+			
+			local pnode = tree[parent]
+			--local nx, ny = makenearpoint(tree[parent].x, tree[parent].y, min, max, rng)
+			local nx, ny = makemanhattenpoint(pnode.x, pnode.y, max - pnode.size, max, rng)
 			nx, ny = wrap(nx, ny, w, h)
 
+			--max_dist = math.min(distanceaxis(nx, ny, pnode.x, pnode.y, w, h)) - pnode.size
+			
 			found = true
 			for _, t in pairs(tree) do
-				local dsqr = distanceSqr(nx, ny, t.x, t.y, w, h)
-				max_dist = math.max(max_dist, dsqr)
-				if dsqr < min * min then
+				local distx, disty = distanceaxis(nx, ny, t.x, t.y, w, h)
+				--if distanceSqr(nx, ny, t.x, t.y, w, h) < min * min then
+				
+				if distx < (t.size + min) / 2 and disty < (t.size + min) / 2 then
 					found = false
 					break
 				end
 			end
 
 			if found then
-				table.insert(tree, { x=nx, y=ny, neighbors={parent} })
+				local max_dist = w + h
+				for _, nt in pairs(tree) do
+					local dx, dy = distanceaxis(nx, ny, nt.x, nt.y, w, h)
+					local d = math.max(dx * 2 - nt.size, dy * 2 - nt.size)
+					max_dist = math.min(d, max_dist)
+				end
+				
+				table.insert(tree, { x=nx, y=ny, size = max_dist, neighbors = {parent} })
 				table.insert(tree[parent].neighbors, #tree)
 				table.insert(available, #tree)
 				break
@@ -183,8 +225,7 @@ local brids = function(w, h, child, samples, min, max, rng)
 		end
 
 		if not found then
-			--table.insert(debug, parent..":"..math.ceil(math.sqrt(max_dist)))
-			table.insert(debug, parent..":"..itr)
+			--table.insert(debug, parent..":"..max_dist)
 			table.remove(available, a_i)
 		end
 
@@ -218,7 +259,8 @@ local brids2 = function(w, h, child, samples, min, max, rng)
 			
 			local dist = rng:random(max - min) + min + 1
 			
-			if true then
+			local search = {}
+			if false then
 				search = { {x=1, y=0}, {x=1, y=1}, {x=0, y=1}, {x=-1, y=1}, {x=-1, y=0}, {x=-1, y=-1}, {x=0, y=-1}, {x=1, y=-1} }
 			else
 				search = { {x=1, y=0}, {x=0, y=1}, {x=-1, y=0}, {x=0, y=-1} }
@@ -226,6 +268,7 @@ local brids2 = function(w, h, child, samples, min, max, rng)
 			local vec = search[rng:random(#search)]
 			local nx, ny = wrap(vec.x * dist, vec.y * dist, w, h)
 
+			found = true
 			for _, t in pairs(tree) do
 				local dsqr = distanceSqr(nx, ny, t.x, t.y, w, h)
 				max_dist = math.max(max_dist, dsqr)
@@ -278,7 +321,7 @@ local partition = function(w, h, samples, min, rng)
 				local n_width = math.floor((width - diff + rng:random(diff*2)) / 2)
 				--tree[id].x = wrap1(x + math.floor(n_width / 2), width)
 				tree[id].w = width - n_width
-				local new_room = {x = wrap1(x + width - n_width, width), y = y, w = n_width, h = height, neighbors={id}}	
+				local new_room = {x = wrap1(x + width - n_width, width), y = y, w = n_width, h = height, neighbors={id}}
 				table.insert(tree, new_room)
 				table.insert(tree[id].neighbors, #tree)
 				table.insert(available, #tree)
@@ -291,7 +334,7 @@ local partition = function(w, h, samples, min, rng)
 				local n_height = math.floor((height - diff + rng:random(diff*2)) / 2)
 				--tree[id].y = wrap1(y + math.floor(n_height / 2), height)
 				tree[id].h = height - n_height
-				local new_room = {x = x, y = wrap1(y + height - n_height, height), w = width, h = n_height, neighbors={id}}	
+				local new_room = {x = x, y = wrap1(y + height - n_height, height), w = width, h = n_height, neighbors={id}}
 				table.insert(tree, new_room)
 				table.insert(tree[id].neighbors, #tree)
 				table.insert(available, #tree)
