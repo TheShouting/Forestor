@@ -11,20 +11,20 @@ cave.cave = function(map, path, x, y, rad, rng, key)
 	
 	local cave = tools.make(size*2+1,size*2+1,"blank")
 	
-	tools.clear(cave, size, size, size, "wall")
+	tools.clear(cave, size, size, size, "cliff")
 	  
 	tools.noise(cave, 0.25, "dirt", rng)
 	
 	tools.clear(cave, size, size, 2, "dirt")
 	
-	tools.noise(cave, 0.05, "wall", rng)
+	tools.noise(cave, 0.05, "cliff", rng)
 	
 	for cx = 1, cave.w do
 		for cy = 1, cave.h do
 			local px = (x + cx - math.floor(cave.w / 2) + map.w - 1) % map.w + 1
 			local py = (y + cy - math.floor(cave.h / 2) + map.h - 1) % map.h + 1
 			if path[px][py] then
-				cave[cx][cy] = "dirt"
+				cave[cx][cy] = "path"
 			end
 		end
 	end

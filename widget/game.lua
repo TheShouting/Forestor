@@ -74,7 +74,7 @@ function game:draw(view_w, view_h)
    py = py * th + view_h * 0.5
    
    love.graphics.setColor(45, 30, 20)
-   love.graphics.circle("fill", 
+   love.graphics.circle("fill",
       px, py - th * 0.5, tw * 4)
       
    
@@ -94,7 +94,7 @@ function game:draw(view_w, view_h)
          local state, ctime =
             self.world.getState(wx,wy)
             
-         local tile = 
+         local tile =
             tileset[self.world.getTile(wx,wy)]
             
          if not tile then
@@ -118,15 +118,14 @@ function game:draw(view_w, view_h)
             local bitmask =
                self.world.getbitmask(wx, wy)
             
-            self.handler:drawtile(cx, cy,
-               tile, bitmask, r, 1)
+            self.handler:drawtile(cx, cy, tile, bitmask, r, 1)
             
             local prop =
                self.world.propSprite(wx, wy)
             if prop then
             
                love.graphics.setColor(0,0,0)
-               love.graphics.circle("fill", 
+               love.graphics.circle("fill",
 			               cx, cy - th*0.5, tw * 0.5)
                love.graphics.setColor(
                   255,255,255)
@@ -146,8 +145,8 @@ function game:draw(view_w, view_h)
 			         end
 			      else
 			         love.graphics.setColor(0, 0, 0)
-			         love.graphics.rectangle("fill", 
-   			         cx - tw * 0.5, cy - th, 
+			         love.graphics.rectangle("fill",
+   			         cx - tw * 0.5, cy - th,
    			         tw, th)
          end
       end
@@ -223,12 +222,12 @@ function game:drawActor(a, th, tw, vw, vh)
       ay = ay * th + vh * 0.5
       
       love.graphics.setColor(0, 0, 0)
-      love.graphics.circle("fill", 
+      love.graphics.circle("fill",
 			         ax, ay - th*0.5, tw * 0.5)
       
       local o = a.pos.x * a.pos.y *
          self.world.random(a.pos.x, a.pos.y)*0.01
-      local ac = 
+      local ac =
          util.processcolor(a:col(), timer, o)
       love.graphics.setColor(ac)
       
@@ -237,7 +236,7 @@ function game:drawActor(a, th, tw, vw, vh)
 			      self.handler:drawsprite(ax, ay,
             sprite, "idle", 1)
       else
-			      love.graphics.circle("fill", 
+			      love.graphics.circle("fill",
 			         ax, ay - th*0.5, tw * 0.25)
 			   end
 			   

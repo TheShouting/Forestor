@@ -1,10 +1,11 @@
 local color = {
 
-   default = {180, 210, 120},
-   warm = {210, 180, 120},
-   cool = {120, 210, 180},
    highlight = {255, 255, 255},
    shadow = {0, 0, 0},
+   green = {180, 210, 120},
+   brown = {210, 180, 120},
+   blue= {120, 210, 180},
+   stone = {196, 196, 196},
    
    
    getColor = function(self, col)

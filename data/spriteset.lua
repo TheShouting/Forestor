@@ -42,7 +42,7 @@ local spriteset = {
       color = "highlight",
       framerate = 0.1,
       ground = {
-         {272, 425, 16, 32}
+         {272, 425, 16, 16}
          }
       },
    sword = {

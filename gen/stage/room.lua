@@ -8,7 +8,7 @@ room.room = function(map, path, x, y, rad, rng, key)
    local w = rng:random(2, 4)
    local h = rng:random(2, 4)
    
-   local room = tools.room(w, h, "wall", "dirt")
+   local room = tools.room(w, h, "wall", "floor")
    
    local rx = x - math.floor(w * 0.5 + 0.5) - 1
    local ry = y - math.floor(h * 0.5 + 0.5) - 1

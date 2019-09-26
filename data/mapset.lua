@@ -12,6 +12,13 @@ local mapset = {
          move=true,
          see=true
       },
+    floor = {
+         name = "floor",
+         neighbors = {path=true, floor=true},
+         tile = "floor",
+         move=true,
+         see=true
+      },
       puddle = {
          name = "puddle",
          tile = "puddle",
@@ -21,6 +28,7 @@ local mapset = {
       },
       dirt = {
          name = "dirt",
+         neighbors = {dirt=true, cliff=true, path=true, puddle},
          tile = "dirt",
          move=true,
          see=true
@@ -91,7 +99,7 @@ local mapset = {
       wall = {
          name = "wall",
          neighbors = {
-            dooropen=true, 
+            dooropen=true,
             doorclose=true,
             doorlocked=true,
             wall=true
@@ -105,10 +113,10 @@ local mapset = {
          tile = "cliff",
          move = false,
          see = false,
-         hit = "rubble",
-         key = "dig"
+         --hit = "rubble",
+         --key = "dig"
       },
-   portal = {
+	  portal = {
          name = "magical ground",
          tile = "portal",
          move = true,
