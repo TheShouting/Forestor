@@ -180,9 +180,9 @@ function scene:drawScene()
 
 	-- Draw canvas
 	if not self.parent then
-		love.graphics.setCanvas()
-		love.graphics.setColor(255,255,255)
-		love.graphics.draw(self.canvas, 0, 0, 0, self.scale)
+		--love.graphics.setCanvas()
+		--love.graphics.setColor(255,255,255)
+		--love.graphics.draw(self.canvas, 0, 0, 0, self.scale)
 	end
 end
 

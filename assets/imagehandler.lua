@@ -20,7 +20,7 @@ function imagehandler:_init(...)
 	for i = 1, select("#",...) do
 		for _, tile in pairs(select(i, ...)) do
 			if type(tile) == "table" then
-				sheetfiles[tile.sheet] = true
+			sheetfiles[tile.sheet] = true
 			end
 		end
 		
@@ -50,9 +50,8 @@ function imagehandler:drawtile(x, y, tile, bitmask, rval, scale)
 		rval = math.floor(rval)
 		img = tile.images[rval % #tile.images + 1]
 	end
-
-	local quad = love.graphics.newQuad(img[1], img[2], img[3], img[4], sheet:getWidth(), sheet:getHeight() )
 	
+	local quad = love.graphics.newQuad(img[1], img[2], img[3], img[4], sheet:getWidth(), sheet:getHeight() )
 	love.graphics.draw(sheet, quad, x - img[3] * 0.5, y - img[4], 0, scale, scale, 0, 0)
 end
 
@@ -70,9 +69,7 @@ function imagehandler:drawsprite(x, y, sprite, state, scale)
 	
 	local img = images[1]
 	local quad = love.graphics.newQuad(img[1], img[2], img[3], img[4], sheet:getWidth(), sheet:getHeight() )
-	
 	love.graphics.draw(sheet, quad, x - img[3] * 0.5, y - img[4], 0, scale, scale, 0, 0)
-
 end
 
 return imagehandler

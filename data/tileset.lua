@@ -35,6 +35,20 @@ local tileset = {
 	},
 	
 	dirt = {
+		bitmask = false,
+		sheet = "forest",
+		images = {
+			{64, 64, 16, 16},
+			{80, 64, 16, 16},
+			{96, 64, 16, 16},
+			{16, 80, 16, 16},
+			{16, 80, 16, 16},
+			{16, 80, 16, 16}
+			},
+		color = "brown"
+		},
+	
+	grass = {
 		bitmask = true,
 		sheet = "forest",
 		images = {
@@ -55,20 +69,18 @@ local tileset = {
 			{16, 64, 16, 16},	--14
 			{16, 80, 16, 16}	--15
 			},
-		color = "brown"
+		color = "green"
 		},
 	
-	grass = {
+	roughgrass = {
 		bitmask = false,
 		sheet = "forest",
 		images = {
-			{16, 80, 16, 16},
-			{16, 80, 16, 16},
 			{64, 0, 16, 16},
 			{80, 0, 16, 16}
 			},
 		color = "green"
-		},
+	},
 	
 	tallgrass = {
 		bitmask = false,
@@ -78,7 +90,15 @@ local tileset = {
 			{112, 0, 16, 16}
 			},
 		color = "green"
+	},
+	
+	flowers = {
+		sheet = "forest",
+		images = {
+			{112, 16, 16, 16}
 		},
+		color = "bright"
+	},
 	
 	blank = {
 		sheet = "forest",

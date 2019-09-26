@@ -19,6 +19,8 @@ pond.pond = function(map, path, x, y, rad, rng, key)
 	  
 	tools.clear(pond, size, size, 1.25, "tallgrass")
 	
+	tools.noise(pond, 0.01, "flowers", rng)
+	
 	--tools.noise(pond, 0.05, "flower", rng)
 	
 	local px = x - size

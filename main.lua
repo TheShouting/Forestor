@@ -9,41 +9,85 @@ local scene = require("scene.menuscene")
 -------------------------------------------------
 
 local app = nil
-local scale = 4
+local scale = 2
+
+-- computer runs GLSL ES 1.0 (what is uniform distortion)
+local crt_shader;
+
+local draw_shader;
+
 
 function love.load()
+	
+	crt_shader = love.graphics.newShader[[
+    vec4 effect(vec4 color, Image tx, vec2 tex_coord, vec2 screen_coord)
+	{
+		float distortion = 0.1;
+		float aberration = 1.0;
+		
+		// curvature
+		vec2 cc = tex_coord - 0.5;
+		float dist = dot(cc, cc) * distortion;
+		tex_coord = (tex_coord + cc * (1.0 + dist) * dist);
+		
+		// fake chromatic aberration
+		float sx = aberration / love_ScreenSize.x;
+		float sy = aberration / love_ScreenSize.y;
+		vec4 r = Texel(tx, vec2(tex_coord.x + sx, tex_coord.y - sy));
+		vec4 g = Texel(tx, vec2(tex_coord.x, tex_coord.y + sy));
+		vec4 b = Texel(tx, vec2(tex_coord.x - sx, tex_coord.y - sy));
+		number a = (r.a + g.a + b.a) / 3.0;
+
+		number _r = r.r;
+		number _g = g.g;
+		number _b = b.b;
+
+		return vec4(_r, _g, _b, a);
+	}
+	]]
+
+	draw_shader = love.graphics.newShader[[
+	    vec4 effect(vec4 color, Image tx, vec2 tex_coord, vec2 screen_coord)
+		{
+			vec4 pixel = Texel(tx, tex_coord);
+			return vec4(pixel.r, pixel.r, pixel.r, pixel.a) * color;
+		}
+	]]
+
 
 	local imgf = love.graphics.newImageFont(
-		"woods_font_1x.png", 
+		"woods_font_1x.png",
 		" abcdefghijklmnopqrstuvwxyz"..
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"..
 		"1234567890-=!@#$%^&*()_+"..
 		"[]\\;'.,/{}|:\"<>?`~", 1)
 	love.graphics.setFont(imgf)
 
-	--love.graphics.setNewFont(
-	--   "assets/font/FiraCode-Regular.ttf", 48)
 	love.graphics.setColor(255,255,255)
 	love.graphics.setBackgroundColor(0,0,0)
 
 	app = scene()
+	app.scale = scale
 end
+
 
 function love.touchpressed(id, x, y, pressure)
 	app:input(x, y)
 end
 
+
 function love.touchreleased(id, x, y, pressure)
 end
 
+
 function love.keypressed(key, scancode, isrepeat)
-	--app.debugmsg = key
 	if key == "escape" then
 		app:goback()
 	else
 		app:presskey(key)
 	end
 end
+
 
 function love.update(dt)
 	local nextapp = app:updateScene(dt)
@@ -52,15 +96,25 @@ function love.update(dt)
 			if app.quit then app:quit() end
 			app = nextapp
 			app.newscene = app
+			app.scale = scale
 		end
 	else
 		love.event.quit()
 	end
 end
 
+
 function love.draw()
 
+	love.graphics.setShader(draw_shader)
 	app:drawScene()
+	
+	love.graphics.setCanvas()
+	love.graphics.setColor(255,255,255)
+	
+	love.graphics.setShader(crt_shader)
+	love.graphics.draw(app.canvas, 0, 0, 0, scale)
+	love.graphics.setShader()
 
 end
 
