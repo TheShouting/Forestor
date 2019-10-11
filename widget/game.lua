@@ -17,7 +17,7 @@ setmetatable(game,{
 
 function game:_init(world)
 	self.off = {x = 1, y = 1 }
-	self.range = 5
+	self.range = 4.5
 	self.world = world
 	   
 	self.handler = imagehandler(tileset, spriteset)

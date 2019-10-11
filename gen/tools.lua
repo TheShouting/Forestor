@@ -1,4 +1,4 @@
--- tools module 
+-- tools module
 -- for manipulating map tables containing
 -- w: width
 -- h: height
@@ -166,7 +166,7 @@ local room = function(w, h, wall, floor)
 	local map = make(w+2, h+2, floor)
 	for x = 1, w+2 do
 		for y = 1, h+2 do
-			if (x == 1 or x == w+2 or 
+			if (x == 1 or x == w+2 or
 					y == 1 or y == h+2) then
 				map[x][y] = wall
 			end
@@ -207,12 +207,12 @@ local line = function(map, x1, y1, x2, y2, cell)
 		y2 = ty
 	end
 
-	local delta_x = x2 - x1 
-	local ix = delta_x > 0 and 1 or -1 
+	local delta_x = x2 - x1
+	local ix = delta_x > 0 and 1 or -1
 	delta_x = 2 * math.abs(delta_x)
 
-	local delta_y = y2 - y1 
-	local iy = delta_y > 0 and 1 or -1 
+	local delta_y = y2 - y1
+	local iy = delta_y > 0 and 1 or -1
 	delta_y = 2 * math.abs(delta_y)
 
 	local px = (x1 + map.w - 1) % map.w + 1
@@ -401,6 +401,59 @@ local path = function(map, x1, y1, x2, y2, r, threshold, rng)
 
 end
 
+
+local distanceSqr = function(x1, y1, x2, y2, w, h)
+	local dx = math.min(math.abs(x2-x1), w - math.abs(x2-x1))
+	local dy = math.min(math.abs(y2-y1), h - math.abs(y2-y1))
+	return dx * dx + dy * dy
+end
+
+
+local distanceaxis = function(x1, y1, x2, y2, w, h)
+	local dx = math.min(math.abs(x2-x1), w - math.abs(x2-x1))
+	local dy = math.min(math.abs(y2-y1), h - math.abs(y2-y1))
+	return dx, dy
+end
+
+
+local wrap = function(x, y, w, h)
+	x = (x + w - 1) % w + 1
+	y = (y + h - 1) % h + 1
+	return x, y
+end
+
+
+local wrap1 = function(x, w)
+	x = (x + w - 1) % w + 1
+	return x
+end
+
+local getaxisdifference = function(x1, x2, w)
+	
+	if math.abs(x2 - x1) < w / 2 then
+		return x2 - x1
+    elseif x2 > x1 then
+		return x2 - x1 - w
+	end
+    return x2 - x1 + w
+end
+
+
+local findnearestaxis = function(x1, y1, x2, y2, w, h)
+	
+	local dir_x = getaxisdifference(x1, x2, w)
+	local dir_y = getaxisdifference(y1, y2, h)
+	
+	if math.abs(dir_x) > math.abs(dir_y) then
+		return dir_x / math.abs(dir_x), 0
+	elseif math.abs(dir_y) > math.abs(dir_x) then
+		return 0, dir_y / math.abs(dir_y)
+	end
+	
+	return 0, 0
+end
+
+
 local tools = {
 	copy = copy,
 	make = make,
@@ -418,7 +471,13 @@ local tools = {
 	replace = replace,
 	grow = grow,
 	reduce = reduce,
-	path = path
+	path = path,
+	distanceSqr = distanceSqr,
+	distanceaxis = distanceaxis,
+	wrap = wrap,
+	wrap1 = wrap1,
+	getaxisdifference = getaxisdifference,
+	findnearestaxis = findnearestaxis
 }
 
 return tools

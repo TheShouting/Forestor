@@ -140,7 +140,7 @@ function scene:drawScene()
 
 	if not self.parent then
 		love.graphics.setCanvas(self.canvas)
-		love.graphics.clear(0, 0, 0)
+		love.graphics.clear(0, 0, 0, 0)
 	end
 
 	if self.draw then

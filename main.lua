@@ -12,10 +12,12 @@ local app = nil
 local scale = 2
 
 -- computer runs GLSL ES 1.0 (what is uniform distortion)
-local crt_shader;
+local crt_shader
+local draw_shader
+local buffer
 
-local draw_shader;
 
+local screen_w, screen_h
 
 function love.load()
 	
@@ -23,7 +25,7 @@ function love.load()
     vec4 effect(vec4 color, Image tx, vec2 tex_coord, vec2 screen_coord)
 	{
 		float distortion = 0.1;
-		float aberration = 1.0;
+		float aberration = 1.1;
 		
 		// curvature
 		vec2 cc = tex_coord - 0.5;
@@ -68,6 +70,12 @@ function love.load()
 
 	app = scene()
 	app.scale = scale
+	
+	screen_w, screen_h = love.graphics.getDimensions()
+	buffer = love.graphics.newCanvas(screen_w, screen_h)
+	
+	love.graphics.setBlendMode( 'alpha', 'alphamultiply' )
+	
 end
 
 
@@ -109,11 +117,22 @@ function love.draw()
 	love.graphics.setShader(draw_shader)
 	app:drawScene()
 	
-	love.graphics.setCanvas()
-	love.graphics.setColor(255,255,255)
 	
-	love.graphics.setShader(crt_shader)
+	love.graphics.setCanvas(buffer)
+	love.graphics.setShader()
+	
+	
+	love.graphics.setColor(0, 0, 0, 48)
+	love.graphics.rectangle( 'fill', 0, 0, screen_w, screen_h )
+	
+	love.graphics.setBlendMode( 'lighten', 'premultiplied' )
+	love.graphics.setColor(255,255,255)
 	love.graphics.draw(app.canvas, 0, 0, 0, scale)
+	
+	love.graphics.setBlendMode( 'alpha', 'alphamultiply' )
+	love.graphics.setCanvas()
+	love.graphics.setShader(crt_shader)
+	love.graphics.draw(buffer, 0, 0, 0, 1)
 	love.graphics.setShader()
 
 end

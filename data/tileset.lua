@@ -76,8 +76,9 @@ local tileset = {
 		bitmask = false,
 		sheet = "forest",
 		images = {
-			{64, 0, 16, 16},
-			{80, 0, 16, 16}
+			--{64, 0, 16, 16},
+			--{80, 0, 16, 16}
+			{48, 112, 16, 16}
 			},
 		color = "green"
 	},

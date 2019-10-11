@@ -41,7 +41,7 @@ end
 function testscene:draw()
 
 	love.graphics.setColor(64, 64, 64)
-	love.graphics.rectangle("line", self.x, self.y, self.w, self.h)
+	--love.graphics.rectangle("line", self.x, self.y, self.w, self.h)
 	love.graphics.line(0, 540, 1920, 540)
 	love.graphics.line(960, 0, 960, 1080)
 
@@ -55,15 +55,48 @@ function testscene:draw()
 
 				local x = node.x + px
 				local y = node.y + py
+				
+				-- Draw Doors
+				love.graphics.setColor(128, 128, 128)
+				for _, door in ipairs(self.map.doors[i]) do
+					--love.graphics.rectangle("fill", x, y, 10, 10)
+					local door_x = door.x + px
+					local door_y = door.y + py
+					if door.destination > i then
+						for _ ,d2 in ipairs(self.map.doors[door.destination]) do
+							if d2.destination == i then
+								
+								local nx = d2.x + px
+								local ny = d2.y + py
+								
+								if math.abs(door_x - nx) > math.abs(door_x - nx - self.w) then
+									nx = nx + self.w
+								elseif math.abs(door_x - nx) > math.abs(door_x - nx + self.w) then
+									nx = nx - self.w
+								end
+			
+								if math.abs(door_y - ny) > math.abs(door_y - ny - self.h) then
+									ny = ny + self.h
+								elseif math.abs(door_y - ny) > math.abs(door_y - ny + self.h) then
+									ny = ny - self.h
+								end
+
+								love.graphics.line(door_x, door_y, nx, ny)
+								break
+							end
+						end
+					end
+					love.graphics.rectangle("fill", door_x - 2, door_y - 2, 4, 4)
+				end
 
 				love.graphics.setColor(32, 32, 32)
 				--love.graphics.circle("line", x, y, self.min/2)
 				love.graphics.rectangle("line", x - node.size / 2, y - node.size / 2, node.size, node.size)
 				love.graphics.setColor(255, 255, 255)
 				love.graphics.circle("fill",x,y,4)
-
 				love.graphics.print(i, x+5, y+5)
 
+				-- Draw Doors
 				for _, n in ipairs(node.neighbors) do
 					if n > i then
 						local nx = self.level[n].x + px
@@ -113,14 +146,15 @@ function testscene:newlevel()
 	local seed = love.timer.getTime()
 	local rng = love.math.newRandomGenerator(seed)
 	self.level = levelgen.brids(self.w, self.h, 8, 200, self.min, self.max, rng)
-	--self.level = levelgen.brids2(self.w, self.h, 5, 20, self.min, self.max, rng)
-	--levelgen.makeLevel(self.w,self.h,8,8,rng)
-	--self.level = levelgen.partition(self.w, self.h, 100, self.min, rng)
+	
+	self.map = levelgen.generate(self.level, 0, rng)
+	
+	--levelgen.generate(self.level, rng)
 
 	local ep, d = levelgen.getFarthest(self.level)
 
 	self.dist = d
-	self.endpoint = self.level[ep]
+	self.endpoint = self.level[self.level.finish]
 	self.last = self.level[#self.level]
 	
 	if self.debugmsg then

@@ -22,19 +22,22 @@ local spriteset = {
          }
       },
    player = {
-      sheet = "kenney",
+      sheet = "characters",
       color = "highlight",
       framerate = 0.1,
       idle = {
-         {408, 0, 16, 16}
+         {0, 0, 16, 16}
          }
       },
    goblin = {
-      sheet = "kenney",
+      sheet = "characters",
       color = "highlight",
       framerate = 0.1,
       idle = {
-         {493, 34, 16, 16}
+         {16, 0, 16, 16},
+         {16, 16, 16, 16},
+         {16, 32, 16, 16},
+         {16, 48, 16, 16}
          }
       },
    potion = {

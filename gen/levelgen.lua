@@ -1,31 +1,5 @@
 local util = require("util")
-
-
-local distanceSqr = function(x1, y1, x2, y2, w, h)
-	local dx = math.min(math.abs(x2-x1), w - math.abs(x2-x1))
-	local dy = math.min(math.abs(y2-y1), h - math.abs(y2-y1))
-	return dx * dx + dy * dy
-end
-
-
-local distanceaxis = function(x1, y1, x2, y2, w, h)
-	local dx = math.min(math.abs(x2-x1), w - math.abs(x2-x1))
-	local dy = math.min(math.abs(y2-y1), h - math.abs(y2-y1))
-	return dx, dy
-end
-
-
-local wrap = function(x, y, w, h)
-	x = (x + w - 1) % w + 1
-	y = (y + h - 1) % h + 1
-	return x, y
-end
-
-
-local wrap1 = function(x, w)
-	x = (x + w - 1) % w + 1
-	return x
-end
+local tools = require("gen.tools")
 
 
 local findClosest = function(samples, pnt, w, h)
@@ -167,6 +141,45 @@ local getFarthest = function(tree)
 end
 
 
+local generate = function(level, rng)
+	
+	local w = level.w
+	local h = level.h
+	local map = {}
+	
+	map.loot = {}
+	map.spawn = {}
+	map.doors = {}
+
+	for i = 1, #level do
+		local doors = {}
+		
+		local x1 = level[i].x
+		local y1 = level[i].y
+		
+		for n_i, n in ipairs(level[i].neighbors) do
+			
+			local x2 = level[n].x
+			local y2 = level[n].y
+			local ax, ay = tools.findnearestaxis(x1, y1, x2, y2, w, h)
+			
+			local dx = tools.wrap1(x1 + util.round(ax * level[i].size * 0.5), w)
+			local dy = tools.wrap1(y1 + util.round(ay * level[i].size * 0.5), h)
+			
+			dx = dx + util.round(tools.getaxisdifference(x1, x2, w) / 2) * math.abs(ay)
+			dy = dy + util.round(tools.getaxisdifference(y1, y2, h) / 2) * math.abs(ax)
+			
+			dx, dy = tools.wrap(dx, dy, w, h)
+			
+			doors[n_i] = {x=dx, y=dy, destination=n, locked=false}
+		end
+		map.doors[i] = doors
+	end
+
+	return map
+end
+
+
 --- Implementation of Brids algorithm
 local brids = function(w, h, child, samples, min, max, rng)
 
@@ -174,11 +187,8 @@ local brids = function(w, h, child, samples, min, max, rng)
 	--1. Pick a random point that's already been placed
 	--2. Pick a random sample that's near the random point.
 	
-	
-	
-	local tree = { {x=1, y=1, size = min, neighbors={}} }
+	local tree = { {x=1, y=1, size = rng:random(min, max), neighbors={}} }
 	local available = {1}
-	local debug = {}
 	
 	while #tree <= child and #available > 0 do
 
@@ -187,37 +197,52 @@ local brids = function(w, h, child, samples, min, max, rng)
 
 		local found = true
 		
-		--local max_dist = 10000000
 		
 		for i = 1, samples do
 			
 			local pnode = tree[parent]
-			--local nx, ny = makenearpoint(tree[parent].x, tree[parent].y, min, max, rng)
-			local nx, ny = makemanhattenpoint(pnode.x, pnode.y, max - pnode.size, max, rng)
-			nx, ny = wrap(nx, ny, w, h)
-
-			--max_dist = math.min(distanceaxis(nx, ny, pnode.x, pnode.y, w, h)) - pnode.size
+			--local nx, ny = makemanhattenpoint(pnode.x, pnode.y, max - pnode.size, max, rng)
+			
+			local rdist = rng:random(max - pnode.size, max)
+			local nvect = {{x=0, y=1}, {x=1, y=0}, {x=0, y=-1}, {x=-1, y=0}}
+			local v = nvect[rng:random(#nvect)]
+			local nx = pnode.x + (rdist * v.x) + rng:random(math.floor(pnode.size / -2), math.ceil(pnode.size / 2)) * v.y
+			local ny = pnode.y + (rdist * v.y) + rng:random(math.floor(pnode.size / -2), math.ceil(pnode.size / 2)) * v.x
+			
+			nx, ny = tools.wrap(nx, ny, w, h)
 			
 			found = true
-			for _, t in pairs(tree) do
-				local distx, disty = distanceaxis(nx, ny, t.x, t.y, w, h)
-				--if distanceSqr(nx, ny, t.x, t.y, w, h) < min * min then
-				
+			for t_i, t in pairs(tree) do
+				local distx, disty = tools.distanceaxis(nx, ny, t.x, t.y, w, h)
 				if distx < (t.size + min) / 2 and disty < (t.size + min) / 2 then
 					found = false
 					break
+				end
+				
+				if i ~= parent then
+					local midx = (nx - pnode.x) / 2 + nx
+					local midy = (ny - pnode.y) / 2 + ny
+					
+					local d = math.max(distx * 2 - pnode.size, disty * 2 - pnode.size)
+					
+					distx, disty = tools.distanceaxis(midx, midy, t.x, t.y, w, h)
+					
+					if distx < d / 2 and disty < d / 2 then
+						found = false
+						break
+					end
 				end
 			end
 
 			if found then
 				local max_dist = w + h
 				for _, nt in pairs(tree) do
-					local dx, dy = distanceaxis(nx, ny, nt.x, nt.y, w, h)
+					local dx, dy = tools.distanceaxis(nx, ny, nt.x, nt.y, w, h)
 					local d = math.max(dx * 2 - nt.size, dy * 2 - nt.size)
 					max_dist = math.min(d, max_dist)
 				end
 				
-				table.insert(tree, { x=nx, y=ny, size = max_dist, neighbors = {parent} })
+				table.insert(tree, { x=tools.wrap1(nx, w), y=tools.wrap1(ny, h), size = max_dist, neighbors = {parent} })
 				table.insert(tree[parent].neighbors, #tree)
 				table.insert(available, #tree)
 				break
@@ -225,7 +250,6 @@ local brids = function(w, h, child, samples, min, max, rng)
 		end
 
 		if not found then
-			--table.insert(debug, parent..":"..max_dist)
 			table.remove(available, a_i)
 		end
 
@@ -233,126 +257,12 @@ local brids = function(w, h, child, samples, min, max, rng)
 
 	tree.w = w
 	tree.h = h
-	tree.debug = debug
+	tree.begin = 0
+	tree.finish, _ = getFarthest(tree)
+	
+	generate(tree,rng)
 
 	return tree
-end
-
-local brids2 = function(w, h, child, samples, min, max, rng)
-	
-	local tree = { {x=1, y=1, neighbors={}} }
-	local available = {1}
-	local debug = {}
-	
-	while #tree <= child and #available > 0 do
-
-		local a_i = rng:random(#available)
-		local parent = available[a_i]
-
-		local found = true
-		
-		local max_dist = 0
-
-		for i = 1, samples do
-
-			local nx, ny = makenearpoint(tree[parent].x, tree[parent].y, min, max, rng)
-			
-			local dist = rng:random(max - min) + min + 1
-			
-			local search = {}
-			if false then
-				search = { {x=1, y=0}, {x=1, y=1}, {x=0, y=1}, {x=-1, y=1}, {x=-1, y=0}, {x=-1, y=-1}, {x=0, y=-1}, {x=1, y=-1} }
-			else
-				search = { {x=1, y=0}, {x=0, y=1}, {x=-1, y=0}, {x=0, y=-1} }
-			end
-			local vec = search[rng:random(#search)]
-			local nx, ny = wrap(vec.x * dist, vec.y * dist, w, h)
-
-			found = true
-			for _, t in pairs(tree) do
-				local dsqr = distanceSqr(nx, ny, t.x, t.y, w, h)
-				max_dist = math.max(max_dist, dsqr)
-				if dsqr < min * min then
-					found = false
-					break
-				end
-			end
-
-			if found then
-				table.insert(tree, { x=nx, y=ny, neighbors={parent} })
-				table.insert(tree[parent].neighbors, #tree)
-				table.insert(available, #tree)
-				break
-			end
-		end
-
-		if not found then
-			table.insert(debug, parent..":"..math.ceil(math.sqrt(max_dist)))
-			table.remove(available, a_i)
-		end
-
-	end
-
-	tree.w = w
-	tree.h = h
-	tree.debug = debug
-
-	return tree
-end
-
-
-local partition = function(w, h, samples, min, rng)
-	
-	
-	local tree = { {x=1, y=1, w=w, h=h, neighbors={}} }
-	local available = {1}
-	
-	for i = 1, samples do
-		
-		local id = available[rng:random(#available)]
-		local width = tree[id].w
-		local height = tree[id].h
-		local x = tree[id].x
-		local y = tree[id].y
-		
-		if width > height then
-			if width > min * 2 then
-				local diff = math.ceil(width / 2) - min
-				local n_width = math.floor((width - diff + rng:random(diff*2)) / 2)
-				--tree[id].x = wrap1(x + math.floor(n_width / 2), width)
-				tree[id].w = width - n_width
-				local new_room = {x = wrap1(x + width - n_width, width), y = y, w = n_width, h = height, neighbors={id}}
-				table.insert(tree, new_room)
-				table.insert(tree[id].neighbors, #tree)
-				table.insert(available, #tree)
-			else
-				table.remove(available, id)
-			end
-		else
-			if height > min * 2 then
-				local diff = math.ceil(width / 2) - min
-				local n_height = math.floor((height - diff + rng:random(diff*2)) / 2)
-				--tree[id].y = wrap1(y + math.floor(n_height / 2), height)
-				tree[id].h = height - n_height
-				local new_room = {x = x, y = wrap1(y + height - n_height, height), w = width, h = n_height, neighbors={id}}
-				table.insert(tree, new_room)
-				table.insert(tree[id].neighbors, #tree)
-				table.insert(available, #tree)
-			else
-				table.remove(available, id)
-			end
-		end
-		
-	end
-	
-	tree = centerlevel(tree)
-	
-	tree.w = w
-	tree.h = h
-	tree.debug = {}
-	return tree
-	
-	
 end
 
 
@@ -360,8 +270,7 @@ local levelgen = {
 	makeLevel = makeLevel,
 	getFarthest = getFarthest,
 	brids = brids,
-	brids2 = brids2,
-	partition = partition
+	generate = generate
 }
 
 return levelgen
