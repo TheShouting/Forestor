@@ -20,12 +20,15 @@ function gamescene:_init(world)
 
 	scene._init(self)
 
-	self.time = 0
 	self.world = world
+end
+
+function gamescene:start()
+	self.time = 0
 
 	-- set draw areas
-	self.game = game(world)
-	self.hud = hud(0, 0, sw, sh, world.player)
+	self.game = game(self.world)
+	self.hud = hud(0, 0, sw, sh, self.world.player)
 
 	-- set touch input areas
 
@@ -39,10 +42,8 @@ function gamescene:_init(world)
 			input=function(self) self.world.input(0, 1) end, key="down"} )
 	self:addwidget( {x=0, y=0, w=self.width/2, h=self.height/2, ax=0.5, ay=0.5, aw=0.5, ah=0.5,
 			input=function(self) self.world.input(0, 0) end, key="space"} )
-
-end
-
-function gamescene:start()
+		
+		
 	-- game is loaded here
 end
 

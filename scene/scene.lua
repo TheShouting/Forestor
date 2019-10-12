@@ -28,7 +28,10 @@ function scene:_init(...)
 	self.pressarea = {0, 0, 0, 0}
 	self.presshit = {0, 0}
 
-	self.scale = 2
+end
+
+function scene:startScene(scale)
+	self.scale = scale
 	local sw, sh = love.graphics.getDimensions()
 
 	self.w = sw / self.scale
@@ -39,7 +42,11 @@ function scene:_init(...)
 
 	self.width = self.canvas:getWidth()
 	self.height = self.canvas:getHeight()
-
+	
+	if self.start then
+		self:start()
+	end
+	
 end
 
 

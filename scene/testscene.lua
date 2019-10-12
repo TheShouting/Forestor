@@ -20,7 +20,11 @@ setmetatable(testscene, {
 function testscene:_init()
 
 	scene._init(self)
+end
 
+
+function testscene:start()
+	
 	self.min = 64
 	self.max = 96
 
@@ -35,6 +39,7 @@ function testscene:_init()
 	self:addwidget( {x = self.x, y = 0, w = self.w + border * 2, h = border, input = self.toggledebug, key="return"})
 
 	self:newlevel()
+	
 end
 
 

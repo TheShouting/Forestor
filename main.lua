@@ -68,10 +68,17 @@ function love.load()
 	love.graphics.setColor(255,255,255)
 	love.graphics.setBackgroundColor(0,0,0)
 
-	app = scene()
-	app.scale = scale
-	
+
 	screen_w, screen_h = love.graphics.getDimensions()
+
+	scale = math.max(math.floor(screen_h / 300), 1)
+	--scale = 1
+
+	app = scene()
+	app:startScene(scale)
+
+	app.debugmsg = screen_w..", "..screen_h.." - "..scale
+	
 	buffer = love.graphics.newCanvas(screen_w, screen_h)
 	
 	love.graphics.setBlendMode( 'alpha', 'alphamultiply' )
@@ -104,7 +111,7 @@ function love.update(dt)
 			if app.quit then app:quit() end
 			app = nextapp
 			app.newscene = app
-			app.scale = scale
+			app:startScene(scale)
 		end
 	else
 		love.event.quit()
@@ -122,7 +129,7 @@ function love.draw()
 	love.graphics.setShader()
 	
 	
-	love.graphics.setColor(0, 0, 0, 48)
+	love.graphics.setColor(0, 0, 0, 72)
 	love.graphics.rectangle( 'fill', 0, 0, screen_w, screen_h )
 	
 	love.graphics.setBlendMode( 'lighten', 'premultiplied' )
