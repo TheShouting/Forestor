@@ -19,29 +19,30 @@ function lootscene:_init(player)
 
 	self.player = player
 	self.container = player.loot
-
+	
 	self.border = 32
-
+	
 	local loot = self.player.loot
 	local destroybutton = nil
 	if loot.rot and  loot.rot > 0 then
 		destroybutton = button("DESTROY", self.destroy, -self.border, self.border, 128, 32, 1, 0, 1, 0)
 	end
-
-
+	destroybutton.key = "space"
+	
+	local closebutton = button("CLOSE", self.goback, self.border, self.border, 128, 32, 0, 0, 0, 0)
+	
 	local rmsg = self.container.right and
 	self.container.right.name or "[EMPTY]"
-
+	
 	local lmsg = self.container.left and
 	self.container.left.name or "[EMPTY]"
-
+	
 	self.right = button(rmsg, self.takeright, -10, 0, 128, 32, 0.5, 0.5, 1, 0.5)
+	self.right.key = "right"
 	self.left = button(lmsg, self.takeleft, 10, 0, 128, 32, 0.5, 0.5, 0, 0.5)
-
-	scene._init(self, 
-		button("CLOSE", self.goback, self.border, self.border, 128, 32, 0, 0, 0, 0),
-		destroybutton,
-		self.right, self.left)
+	self.left.key = "left"
+	
+	scene._init(self, closebutton, destroybutton, self.right, self.left)
 
 end
 

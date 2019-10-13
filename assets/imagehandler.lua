@@ -56,9 +56,10 @@ function imagehandler:drawtile(x, y, tile, bitmask, rval, scale)
 end
 
 
-function imagehandler:drawsprite(x, y, sprite, state, scale)
+function imagehandler:drawsprite(x, y, sprite, state, scale, t)
 
 	scale = scale or 1
+	t = t or 1
 	
 	local images = sprite[state]
 	if not images then
@@ -67,7 +68,11 @@ function imagehandler:drawsprite(x, y, sprite, state, scale)
 	
 	local sheet = self.sheets[sprite.sheet]
 	
-	local img = images[1]
+	local i = math.floor(t / sprite.framerate) % #images + 1
+	
+	--local i = math.floor((#images - 1) * t) + 1 -- if 0 < t < 1
+	
+	local img = images[i]
 	local quad = love.graphics.newQuad(img[1], img[2], img[3], img[4], sheet:getWidth(), sheet:getHeight() )
 	love.graphics.draw(sheet, quad, x - img[3] * 0.5, y - img[4], 0, scale, scale, 0, 0)
 end

@@ -17,38 +17,31 @@ function world.new(width, height)
 	world.prop = {}
 	world.player = {}
 	world.time = 0
-
+	
 	world.level = 1
 	world.seed = 0
-
+	
 	world.view = 4
 	world.i = 1
-
+	
 	world.updatetime = 0
-
+	
 	world.transition = -1
 	world.transitiontime = 0
 	world.transitionmethod = world.generate
-
+	
 	local tkeys = {}
 	for k, v in pairs(world.set) do
 		table.insert(tkeys, k)
 	end
-
+	
 	for x=1, world.width do
 		world.map[x] = {}
 		for y=1, world.height do
-			world.map[x][y] = {
-				id = "blank",
-				rand = 0,
-				see = false,
-				time = 0,
-				state = "",
-				bitmask = 0
-			}
+			world.map[x][y] = { id = "blank", rand = 0, see = false, time = 0, state = "", bitmask = 0 }
 		end
 	end
-
+	
 	world.player = objects.player(100,25)
 	world.insert(world.player, 1, 1)
 
@@ -58,17 +51,16 @@ function world.generate()
 
 	for i=#world.actor, 2, -1 do
 		local actor = world.actor[i]
-		local cell = 
-		world.map[actor.pos.x][actor.pos.y]
+		local cell = world.map[actor.pos.x][actor.pos.y]
 		cell.obj = nil
 		world.actor[i] = nil
 	end
-
+	
 	world.move(world.player, 1, 1)
 	world.player.animation = {}
-
+	
 	generate.run(world)
-
+	
 	--world.flush()
 	world.floodview(1, 1, world.view)
 	world.player.message = "I see forest..."
@@ -78,7 +70,6 @@ end
 function world.nextlevel(portal, instigator)
 
 	if instigator == world.player then
-
 		world.level = world.level + 1
 		world.transition = 50
 		world.transitionmethod = world.generate
@@ -106,12 +97,7 @@ end
 
 function world.getneighbors(x, y)
 	local p = world.pos(x, y)
-	local search = {
-		{x=0, y=-1},
-		{x=1, y=0},
-		{x=0, y=1},
-		{x=-1, y=0}
-	}
+	local search = { {x=0, y=-1}, {x=1, y=0}, {x=0, y=1}, {x=-1, y=0} }
 	local cell = world.map[p.x][p.y]
 	local tile = world.set[cell.id]
 	local bw = 0
@@ -147,10 +133,7 @@ end
 
 -- Return new position within the map
 function world.pos(px, py)
-	return {
-		x = ((px - 1) % world.width) + 1, 
-		y = ((py - 1) % world.height) + 1
-	}
+	return { x = ((px - 1) % world.width) + 1, y = ((py - 1) % world.height) + 1 }
 end
 
 
@@ -238,12 +221,7 @@ end
 function world.setId(x, y, id)
 	world.map[x][y].id = id
 	world.map[x][y].bitmask = -1
-	local search = {
-		{x=0, y=-1},
-		{x=1, y=0},
-		{x=0, y=1},
-		{x=-1, y=0}
-	}
+	local search = { {x=0, y=-1}, {x=1, y=0}, {x=0, y=1}, {x=-1, y=0} }
 	for _, n in ipairs(search) do
 		local p = world.pos(x + n.x, y + n.y)
 		world.map[p.x][p.y].bitmask = -1
@@ -266,8 +244,7 @@ function world.fov(vx, vy, range)
 			if ((x*x + y*y) < range*range) then
 				local p = world.pos(vx+x, vy+y)
 				local cell = world.map[p.x][p.y]
-				cell.see =
-				world.ray(vx, vy, vx + x, vy + y)
+				cell.see = world.ray(vx, vy, vx + x, vy + y)
 			end
 		end
 	end
@@ -276,7 +253,7 @@ end
 function world.floodview(x, y, range, cx, cy)
 
 	if (cx and cy) then
-		local r = (cx-x)*(cx-x)+(cy-y)*(cy-y)
+		local r = (cx - x) * (cx - x) + (cy - y) * (cy - y)
 		if (r > range*range) then
 			return nil
 		end
@@ -285,8 +262,7 @@ function world.floodview(x, y, range, cx, cy)
 		cy = y
 	end
 
-	local s8 = {{1,0}, {1,1}, {0,1}, {-1,1},
-		{-1,0},{-1,-1},{0, -1},{1, -1}}
+	local s8 = {{1,0}, {1,1}, {0,1}, {-1,1},{-1,0},{-1,-1},{0, -1},{1, -1}}
 
 	for k, v in pairs(s8) do
 		local nx = v[1] + cx
@@ -306,28 +282,17 @@ end
 
 function world.path(ox, oy, tx, ty)
 
-	local s4 = {
-		{x=1, y=0},
-		{x=0, y=1},
-		{x=-1, y=0},
-		{x=0, y=-1}
-	}
+	local s4 = { {x=1, y=0}, {x=0, y=1}, {x=-1, y=0}, {x=0, y=-1} }
 
 	local npath = {x=0, y=0}
-	local dist = 
-	world.width * world.width +
-	world.height * world.height + 10
+	local dist = world.width * world.width + world.height * world.height + 10
 	for i = 1, #s4 do
 		local dir = s4[i]
 		local pos = world.pos(dir.x + ox,dir.y + oy)
 		local cell = world.map[pos.x][pos.y].id
 		if (world.set[cell].move) then
-			local dx = math.min(
-				math.abs(tx - pos.x), 
-				math.abs(tx + world.width - pos.x))
-			local dy = math.min(
-				math.abs(ty - pos.y), 
-				math.abs(ty + world.height - pos.y))
+			local dx = math.min( math.abs(tx - pos.x), math.abs(tx + world.width - pos.x))
+			local dy = math.min( math.abs(ty - pos.y), math.abs(ty + world.height - pos.y))
 			if (dx*dx + dy*dy < dist) then
 				dist = dx*dx + dy*dy
 				npath = dir
@@ -342,12 +307,8 @@ function world.dist(x1, y1, x2, y2)
 	local p1 = world.pos(x1, y1)
 	local p2 = world.pos(x2, y2)
 
-	local x = math.min(
-		math.abs(p1.x - p2.x),
-		world.width - math.abs(p1.x - p2.x))
-	local y = math.min(
-		math.abs(p1.y - p2.y),
-		world.height - math.abs(p1.y - p2.y))
+	local x = math.min( math.abs(p1.x - p2.x), world.width - math.abs(p1.x - p2.x))
+	local y = math.min( math.abs(p1.y - p2.y), world.height - math.abs(p1.y - p2.y))
 
 	return x * x + y * y
 end
@@ -364,12 +325,12 @@ function world.ray(x1, y1, x2, y2)
 		y2 = ty
 	end
 
-	local delta_x = x2 - x1 
-	local ix = delta_x > 0 and 1 or -1 
+	local delta_x = x2 - x1
+	local ix = delta_x > 0 and 1 or -1
 	delta_x = 2 * math.abs(delta_x)
 
-	local delta_y = y2 - y1 
-	local iy = delta_y > 0 and 1 or -1 
+	local delta_y = y2 - y1
+	local iy = delta_y > 0 and 1 or -1
 	delta_y = 2 * math.abs(delta_y)
 
 	if delta_x >= delta_y then
@@ -450,16 +411,16 @@ function world.shift(obj, x, y, t, dist)
 
 	local anim = {
 		pos = {x=obj.pos.x, y=obj.pos.y},
-		dir = {x=x, y=y}, 
-		lerp = "bump"
+		dir = {x=x, y=y},
+		lerp = "bump",
+		state = "move"
 	}
 
 	obj.anim[#obj.anim + 1] = anim
 
 	for i = 1, dist or 1 do
 
-		local pos = 
-		world.pos(obj.pos.x + x, obj.pos.y + y)
+		local pos = world.pos(obj.pos.x + x, obj.pos.y + y)
 		local cell = world.map[pos.x][pos.y]
 		local id = cell.id
 
@@ -468,30 +429,26 @@ function world.shift(obj, x, y, t, dist)
 			if k then
 				if obj.active then
 					if obj:usekey(k) then
-						world.setId(pos.x, pos.y,
-							world.set[id].hit)
+						world.setId(pos.x, pos.y, world.set[id].hit)
 					else
 						obj.message = "I need "..k.."!"
 					end
 				end
 			else
-				world.setId(pos.x, pos.y,
-					world.set[id].hit)
+				world.setId(pos.x, pos.y, world.set[id].hit)
 			end
 		end
 
 		if (world.set[id].move) then
 			local oldpos = obj.pos
 
-			local hit = 
-			world.move(obj, pos.x, pos.y)
+			local hit = world.move(obj, pos.x, pos.y)
 
 			if not hit then
 				cell.time = t
-				world.map[oldpos.x][oldpos.y].time=t
+				world.map[oldpos.x][oldpos.y].time = t
 				cell.state = "walk"
-				anim.lerp = 
-				obj.active and "step" or "slide"
+				anim.lerp = obj.active and "step" or "slide"
 				anim.dir = {x=x*i, y=y*i}
 
 				if cell.prop then
@@ -514,6 +471,7 @@ function world.shift(obj, x, y, t, dist)
 	return nil, dist
 end
 
+
 function world.fademap(n)
 
 	n = n or 1
@@ -521,14 +479,10 @@ function world.fademap(n)
 	local player = world.player.pos
 
 	for i=1, n do
-		local rx = 
-		love.math.random(
-			-world.view - 1, world.view + 1)
-		local ry = love.math.random(
-			-world.view - 1,  world.view + 1)
+		local rx = love.math.random( -world.view - 1, world.view + 1)
+		local ry = love.math.random( -world.view - 1,  world.view + 1)
 
-		local pos = 
-		world.pos(player.x + rx, player.y + ry)
+		local pos = world.pos(player.x + rx, player.y + ry)
 
 		world.map[pos.x][pos.y].see = false
 	end
@@ -536,12 +490,11 @@ function world.fademap(n)
 	world.map[player.x][player.y].see  = true
 end
 
+
 function world.revealmap(t)
 	for x = -world.view - 1, world.view + 1 do
 		for y = -world.view - 1, world.view + 1 do
-			local pos = world.pos(
-				world.player.pos.x + x,
-				world.player.pos.y + y)
+			local pos = world.pos( world.player.pos.x + x, world.player.pos.y + y)
 			world.map[pos.x][pos.y].time = t
 			world.map[pos.x][pos.y].state = "reveal"
 		end
@@ -556,8 +509,7 @@ end
 
 function world.addcorpse(actor)
 
-	local corpse = 
-	objects.dummy("portal", world.loot)
+	local corpse = objects.dummy("portal", world.loot)
 
 	corpse.left = actor.left
 	corpse.right = actor.right
@@ -651,7 +603,7 @@ function world.taketurn(actor, time)
 	actor.knockback = math.max(rkb, lkb)
 
 	-- update actor
-	local cell = 
+	local cell =
 	world.map[actor.pos.x][actor.pos.y]
 	if (actor.alive) then
 		-- move and update actor
@@ -665,9 +617,9 @@ function world.taketurn(actor, time)
 
 			if actor.active then
 				local anim = {
-					pos = {x=actor.pos.x,
-						y=actor.pos.y},
-					dir = {x=0, y=0}}
+					pos = {x=actor.pos.x, y=actor.pos.y},
+					dir = {x=0, y=0}
+				}
 
 				cell.time = time
 				if cell.prop then
@@ -677,21 +629,15 @@ function world.taketurn(actor, time)
 				actor.anim[#actor.anim + 1] = anim
 			end
 		else
-			local other, _ = 
-			world.shift(actor,move.x,move.y,time)
-			if type(other) == "table" 
-				and actor.active then
+			local other, _ = world.shift(actor,move.x,move.y,time)
+			if type(other) == "table" and actor.active then
 				other:push(actor)
 				other.time = time
 
 				-- knock back pushed actor
 				if actor.knockback > 0 then
-					if other.alive and 
-						not other.heavy then
-						local _, d =
-						world.shift(other, 
-							move.x, move.y, 
-							time, actor.knockback)
+					if other.alive and not other.heavy then
+						local _, d = world.shift(other, move.x, move.y, time, actor.knockback)
 						if d > 0 then
 							other:setstatus("stun", 1)
 						end
@@ -700,10 +646,8 @@ function world.taketurn(actor, time)
 			end
 		end
 		-- Apply tile effects
-		local ncell = 
-		world.map[actor.pos.x][actor.pos.y]
-		local effect =
-		world.set[ncell.id].effect
+		local ncell = world.map[actor.pos.x][actor.pos.y]
+		local effect = world.set[ncell.id].effect
 		if (effect) then
 			actor.time = time
 			for e, t in pairs(effect) do

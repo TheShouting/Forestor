@@ -141,28 +141,41 @@ end
 function game:drawActor(a, th, tw, vw, vh)
 
 	local timer = love.timer.getTime()
-	
+
 	local ax = a.pos.x
 	local ay = a.pos.y
 	local bx = ax
 	local by = ay
-	 
+
+	local state = "idle"
+
 	if #a.animation > 0 then
+
 		local ftime = 1 / 6
 		local dt = timer - a.updateTime
 		local f = math.floor(dt / ftime)
 		f = math.min(f, #a.animation - 1)
 		dt = dt - f * ftime
-		
+
 		local anim = a.animation[f + 1]
-     
+
 		ax = anim.pos.x
 		ay = anim.pos.y
 		bx = ax + anim.dir.x
 		by = ay + anim.dir.y
-		   
+		
 		if anim.lerp then
-			local v = math.min(dt / ftime, 1)
+			
+			local v = dt / ftime
+			
+			if v < 1 then
+				state = anim.state or "idle"
+			else
+				v = 1
+			end
+			
+			--local v = math.min(dt / ftime, 1)
+			
 			local j = 0
 					
 			if anim.lerp == "bump" then
@@ -191,28 +204,28 @@ function game:drawActor(a, th, tw, vw, vh)
 	ax = ax * tw + vw * 0.5
 	ay = ay * th + vh * 0.5
 	
-	love.graphics.setColor(0, 0, 0)
-	love.graphics.circle("fill", ax, ay - th * 0.5, tw * 0.5)
-  
-	local o = a.pos.x * a.pos.y * self.world.random(a.pos.x, a.pos.y)*0.01
+	--love.graphics.setColor(0, 0, 0)
+	--love.graphics.circle("fill", ax, ay - th * 0.5, tw * 0.5)
+	
+	local o = a.pos.x * a.pos.y * self.world.random(a.pos.x, a.pos.y) * 0.01
 	local ac = color.processcolor(a:col(), timer, o)
 	love.graphics.setColor(ac)
 	
 	local sprite = spriteset[a:getSprite()]
 	if sprite then
-		self.handler:drawsprite(ax, ay, sprite, "idle", 1)
+		self.handler:drawsprite(ax, ay, sprite, state, 1, timer)
 	else
 		love.graphics.circle("fill", ax, ay - th * 0.5, tw * 0.25)
 	end
 
 	if a.right then
 		local prop = spriteset[a.right:getSprite()]
-		self.handler:drawsprite(ax + tw / 2, ay, prop, "hand")
+		self.handler:drawsprite(ax + tw / 2, ay, prop, "hand", 1, timer)
 	end
    
 	if a.left then
 		local prop = spriteset[a.left:getSprite()]
-		self.handler:drawsprite(ax - tw / 2, ay, prop, "hand")
+		self.handler:drawsprite(ax - tw / 2, ay, prop, "hand", 1, timer)
 	end
 end
 

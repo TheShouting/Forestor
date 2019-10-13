@@ -115,6 +115,7 @@ function scene:addsubscene(sub)
 	sub.canvas = self.canvas
 	sub.scale = self.scale
 	self.subscene = sub
+	self.subscene:startScene(self.scale)
 end
 
 

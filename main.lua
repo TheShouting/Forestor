@@ -11,6 +11,8 @@ local scene = require("scene.menuscene")
 local app = nil
 local scale = 2
 
+local delta = 1.0
+
 -- computer runs GLSL ES 1.0 (what is uniform distortion)
 local crt_shader
 local draw_shader
@@ -24,7 +26,7 @@ function love.load()
 	crt_shader = love.graphics.newShader[[
     vec4 effect(vec4 color, Image tx, vec2 tex_coord, vec2 screen_coord)
 	{
-		float distortion = 0.1;
+		float distortion = 0.12;
 		float aberration = 1.1;
 		
 		// curvature
@@ -71,7 +73,7 @@ function love.load()
 
 	screen_w, screen_h = love.graphics.getDimensions()
 
-	scale = math.max(math.floor(screen_h / 300), 1)
+	scale = math.max(math.floor(screen_h / 180), 1)
 	--scale = 1
 
 	app = scene()
@@ -105,6 +107,7 @@ end
 
 
 function love.update(dt)
+	delta = dt
 	local nextapp = app:updateScene(dt)
 	if nextapp then
 		if nextapp ~= app then
@@ -124,18 +127,19 @@ function love.draw()
 	love.graphics.setShader(draw_shader)
 	app:drawScene()
 	
-	
+	-- Draw to a buffer first t create a small amount of motion blue
 	love.graphics.setCanvas(buffer)
 	love.graphics.setShader()
 	
-	
-	love.graphics.setColor(0, 0, 0, 72)
+	love.graphics.setColor(0, 0, 0, 255 * delta * 8)
+	--love.graphics.setColor(0, 0, 0, 255)
 	love.graphics.rectangle( 'fill', 0, 0, screen_w, screen_h )
 	
 	love.graphics.setBlendMode( 'lighten', 'premultiplied' )
 	love.graphics.setColor(255,255,255)
 	love.graphics.draw(app.canvas, 0, 0, 0, scale)
 	
+	-- Draw the buffer to the window
 	love.graphics.setBlendMode( 'alpha', 'alphamultiply' )
 	love.graphics.setCanvas()
 	love.graphics.setShader(crt_shader)
