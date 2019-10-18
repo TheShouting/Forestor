@@ -56,35 +56,48 @@ local run = function(world)
 	--local level = levelgen.makeLevel(
 	--   world.width, world.height, 6, 3, rng)
 
-	local min_radius = 10
-	local level = levelgen.brids(world.width, world.height, 8, 20, min_radius, 16, rng)
+	local min_size = 6
+	local max_size = 12
+	local level = levelgen.brids(world.width, world.height, 8, 20, min_size, max_size, rng)
+	
+	level = levelgen.generate(level, rng)
 
+	local map = tools.make(world.width, world.height, "roughgrass")
+	
+	-- Create paths between doors
+	for i = 1, #level do
+		for d = 1, #level[i].doors do
+			local dest = level[i].doors[d].destination
+			if (dest > i) then
+				for n = 1, #level[dest].doors do
+					if level[dest].doors[n].destination == i then
+						local x1 = level[i].doors[d].x
+						local y1 = level[i].doors[d].y
+						local x2 = level[dest].doors[n].x
+						local y2 = level[dest].doors[n].y
+						tools.line(map, x1, y1, x2, y2, "path")
+						break
+					end
+				end
+			end
+		end
+	end
+	
 	-- create biome
-	local map, path = biome.forest(level, rng)
+	--local map, path = biome.forest(level, rng)
 	--local map, path = biome.empty(level, rng)
 
 	local levelend, _ = levelgen.getFarthest(level)
 	--local levelend = #level
 	local levelstart = 1
 
-	local items = {
-		"axe",
-		"sword",
-		"shield",
-		"hammer",
-		"potion"
-	}
-	local object = {
-		"goblin"
-	}
-
 	-- apply points of interest
 	for i=1, #level do
 		local r = rng:random()
 		local stg = nil
 		local n = level[i]
-		local itm = items[rng:random(#items)]
-		local obj = object[rng:random(#object)]
+		--local itm = items[rng:random(#items)]
+		--local obj = object[rng:random(#object)]
 		
 		if i == levelstart then
 			stg = stage.start
@@ -92,28 +105,25 @@ local run = function(world)
 			stg = stage.finish
 		elseif #n.neighbors > 2 then
 			stg = stage.crossroad
-			world.map[n.x][n.y].prop = objects.prop(itm)
-			if r > 0.25 then
-				world.insert(objects.actor(obj), n.x, n.y)
-			end
 		elseif #n.neighbors > 1 then
 			stg = stage.passage
-			if r > 0.25 then
-				world.insert(objects.actor(obj), n.x, n.y)
-			end
 		else
 			stg = stage.endpoint
-			world.map[n.x][n.y].prop = objects.prop(itm)
-			if r > 0.25 then
-				world.insert(objects.actor(obj), n.x, n.y)
-			end
 		end
 		r = rng:random(#stg)
-		stg[r](map, path, n.x, n.y, math.ceil(n.size / 2), rng, false)
+		stg[r](map, n, rng) -- Place stage on map
 	end
 
 	map[level[levelend].x][level[levelend].y] = "portal"
 	world.insert(objects.dummy("portal", world.nextlevel), level[levelend].x, level[levelend].y)
+	
+	
+	for _, n in ipairs(level) do
+		for _, d in ipairs(n.doors) do
+			map[d.x][d.y] = "wall"
+		end
+	end
+	
 
 	fillmap(world, map)
 

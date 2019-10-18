@@ -25,8 +25,8 @@ end
 
 function testscene:start()
 	
-	self.min = 64
-	self.max = 96
+	self.min = 32
+	self.max = 128
 
 	local border = 16
 
@@ -45,8 +45,8 @@ end
 
 function testscene:draw()
 
-	love.graphics.setColor(64, 64, 64)
-	--love.graphics.rectangle("line", self.x, self.y, self.w, self.h)
+	love.graphics.setColor(64, 0, 0)
+	love.graphics.rectangle("line", self.x, self.y, self.w, self.h)
 	love.graphics.line(0, 540, 1920, 540)
 	love.graphics.line(960, 0, 960, 1080)
 
@@ -63,12 +63,12 @@ function testscene:draw()
 				
 				-- Draw Doors
 				love.graphics.setColor(128, 128, 128)
-				for _, door in ipairs(self.map.doors[i]) do
+				for _, door in ipairs(self.level[i].doors) do
 					--love.graphics.rectangle("fill", x, y, 10, 10)
 					local door_x = door.x + px
 					local door_y = door.y + py
 					if door.destination > i then
-						for _ ,d2 in ipairs(self.map.doors[door.destination]) do
+						for _ ,d2 in ipairs(self.level[door.destination].doors) do
 							if d2.destination == i then
 								
 								local nx = d2.x + px
@@ -152,7 +152,7 @@ function testscene:newlevel()
 	local rng = love.math.newRandomGenerator(seed)
 	self.level = levelgen.brids(self.w, self.h, 8, 200, self.min, self.max, rng)
 	
-	self.map = levelgen.generate(self.level, 0, rng)
+	self.level = levelgen.generate(self.level, 0, rng)
 	
 	--levelgen.generate(self.level, rng)
 

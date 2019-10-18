@@ -1,32 +1,29 @@
 local tools = require("gen.tools")
 
 local meadow = {
-   ... --meta-fields here
-   }
+	... --meta-fields here
+	}
    
-meadow.meadow = function(map, path, x, y, rad, rng, key)
-   local rad = rng:random(2, rad)
-   
-   local rpos = math.floor(rad)
-   
-   local meadow =
-      tools.make(rpos*2+1, rpos*2+1, "blank")
-      
-   tools.clear(meadow, rpos+1, rpos+1, rad, "grass")
-   tools.noise(meadow, 0.05, "dirt", rng)
-   tools.noise(meadow, 0.1, "flowers", rng)
-   local rx = x - rpos - 1
-   local ry = y - rpos - 1
-   tools.apply(map, meadow, "blank", rx, ry)
-   
-   return keyobject
-   
+meadow.meadow = function(map, node, rng)
+	
+	local size = math.floor(node.size / 2) - 1
+	
+	local area = tools.make(size*2, size*2, "grass")
+	
+	local rx = node.x - size
+	local ry = node.y - size
+	tools.apply(map, area, "blank", rx, ry)
+	
+	for _, d in ipairs(node.doors) do
+		tools.path(map, d.x, d.y, node.x, node.y, "flowers", 3, rng)
+	end
+
 end
 
 setmetatable(meadow, {
-   __call = function(_, map, x, y, rad, rng, key)
-      return meadow.meadow(map, x, y, rad, rng, key)
-   end
-   })
+	__call = function(_, map, node, rng)
+		return meadow.meadow(map, node, rng)
+	end
+	})
    
 return meadow

@@ -145,11 +145,11 @@ local generate = function(level, rng)
 	
 	local w = level.w
 	local h = level.h
-	local map = {}
+	--local map = {}
 	
-	map.loot = {}
-	map.spawn = {}
-	map.doors = {}
+	level.loot = {}
+	level.spawn = {}
+	level.doors = {}
 
 	for i = 1, #level do
 		local doors = {}
@@ -163,8 +163,8 @@ local generate = function(level, rng)
 			local y2 = level[n].y
 			local ax, ay = tools.findnearestaxis(x1, y1, x2, y2, w, h)
 			
-			local dx = tools.wrap1(x1 + util.round(ax * level[i].size * 0.5), w)
-			local dy = tools.wrap1(y1 + util.round(ay * level[i].size * 0.5), h)
+			local dx = tools.wrap1(x1 + math.floor(ax * level[i].size * 0.5), w)
+			local dy = tools.wrap1(y1 + math.floor(ay * level[i].size * 0.5), h)
 			
 			dx = dx + util.round(tools.getaxisdifference(x1, x2, w) / 2) * math.abs(ay)
 			dy = dy + util.round(tools.getaxisdifference(y1, y2, h) / 2) * math.abs(ax)
@@ -173,10 +173,11 @@ local generate = function(level, rng)
 			
 			doors[n_i] = {x=dx, y=dy, destination=n, locked=false}
 		end
-		map.doors[i] = doors
+		level[i].doors = doors
+		--level.doors[i] = doors
 	end
 
-	return map
+	return level
 end
 
 

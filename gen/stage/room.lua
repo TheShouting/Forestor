@@ -4,48 +4,25 @@ local room = {
    ... --meta-fields here
    }
    
-room.room = function(map, path, x, y, rad, rng, key)
-   local w = rng:random(2, 4)
-   local h = rng:random(2, 4)
-   
-   local room = tools.room(w, h, "wall", "floor")
-   
-   local rx = x - math.floor(w * 0.5 + 0.5) - 1
-   local ry = y - math.floor(h * 0.5 + 0.5) - 1
-   tools.apply(map, room, nil, rx, ry)
-   
-   local door = "doorclose"
-   local keyobject = nil
-   
-   if key then
-      if rng:random(2) == 1 then
-         door = "dooropen"
-         keyobject = "key"
-      end
-   end
-   
-   for x = 1, room.w do
-      for y = 1, room.h do
-         local px =
-            (x + rx + map.w - 1) % map.w + 1
-         local py =
-            (y + ry + map.h - 1) % map.h + 1
-         if x == 1 or x == room.w or
-            y == 1 or y == room.h then
-            if path[px][py] then
-               map[px][py] = "doorclose"
-            end
-         end
-      end
-   end
-   
-   return keyobject
-   
+room.room = function(map, node, rng)
+	
+	local size = math.floor(node.size / 2) - 1
+	
+	local area = tools.make(size*2, size*2, "dirt")
+	
+	local rx = node.x - size
+	local ry = node.y - size
+	tools.apply(map, area, "blank", rx, ry)
+	
+	for _, d in ipairs(node.doors) do
+		tools.path(map, d.x, d.y, node.x, node.y, "floor", 3, rng)
+	end
+
 end
 
 setmetatable(room, {
-   __call = function(_, map, x, y, rad, rng, key)
-      return room.room(map, x, y, rad, rng, key)
+   __call = function(_, map, node, rng)
+      return room.room(map, node, rng)
    end
    })
    

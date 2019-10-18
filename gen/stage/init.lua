@@ -1,35 +1,25 @@
 local room = require("gen.stage.room")
-local pond = require("gen.stage.pond")
 local meadow = require("gen.stage.meadow")
-local cave = require("gen.stage.cave")
-local forest = require("gen.stage.forest")
-
 
 local stage = {
 	start = {
 		meadow,
-		room,
-		cave
+		room
 	},
 	finish = {
-		room,
-		pond,
-		cave
+		meadow,
+		room
 	},
 	endpoint = {
-		room,
 		meadow,
-		pond,
-		cave
+		room
 	},
 	crossroad = {
-		meadow,
-		pond,
-		forest
+		meadow
 	},
 	passage = {
-		forest,
-		cave
+		meadow,
+		room
 	}
 }
 

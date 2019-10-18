@@ -26,17 +26,17 @@ function love.load()
 	crt_shader = love.graphics.newShader[[
     vec4 effect(vec4 color, Image tx, vec2 tex_coord, vec2 screen_coord)
 	{
-		float distortion = 0.12;
-		float aberration = 1.1;
+		float DISTORTION = 0.2;
+		float ABERRATION = 1.2;
 		
 		// curvature
 		vec2 cc = tex_coord - 0.5;
-		float dist = dot(cc, cc) * distortion;
+		float dist = dot(cc, cc) * DISTORTION;
 		tex_coord = (tex_coord + cc * (1.0 + dist) * dist);
 		
 		// fake chromatic aberration
-		float sx = aberration / love_ScreenSize.x;
-		float sy = aberration / love_ScreenSize.y;
+		float sx = ABERRATION / love_ScreenSize.x;
+		float sy = ABERRATION / love_ScreenSize.y;
 		vec4 r = Texel(tx, vec2(tex_coord.x + sx, tex_coord.y - sy));
 		vec4 g = Texel(tx, vec2(tex_coord.x, tex_coord.y + sy));
 		vec4 b = Texel(tx, vec2(tex_coord.x - sx, tex_coord.y - sy));
@@ -45,8 +45,16 @@ function love.load()
 		number _r = r.r;
 		number _g = g.g;
 		number _b = b.b;
+		
+		// Vignette
+		float RADIUS = 0.9;
+		float SOFTNESS = 0.65;
+		float OPACITY = 0.5;
+		float INTENSITY = 1.1;
+		float l = length(tex_coord.xy * 2.0 - vec2(1.0));
+		float v = (smoothstep(RADIUS, RADIUS-SOFTNESS, l) * (1.0 - OPACITY) + OPACITY) * INTENSITY;
 
-		return vec4(_r, _g, _b, a);
+		return vec4(_r * v, _g * v, _b * v, a);
 	}
 	]]
 
