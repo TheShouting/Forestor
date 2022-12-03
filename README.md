@@ -5,3 +5,6 @@ This initially started out a project that I can code entirely on my phone. While
 
 Requires LÖVE:
 [https://love2d.org/](https://love2d.org/)
+
+## Screenshots
+![Screenshot 01](doc/screenshot_01.png)
