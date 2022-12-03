@@ -91,13 +91,24 @@ local run = function(world)
 	--local levelend = #level
 	local levelstart = 1
 
+	local items = {
+		"axe",
+		"sword",
+		"shield",
+		"hammer",
+		"potion"
+	}
+	local object = {
+		"goblin"
+	}
+
 	-- apply points of interest
 	for i=1, #level do
 		local r = rng:random()
 		local stg = nil
 		local n = level[i]
-		--local itm = items[rng:random(#items)]
-		--local obj = object[rng:random(#object)]
+		local itm = items[rng:random(#items)]
+		local obj = object[rng:random(#object)]
 		
 		if i == levelstart then
 			stg = stage.start
@@ -105,8 +116,15 @@ local run = function(world)
 			stg = stage.finish
 		elseif #n.neighbors > 2 then
 			stg = stage.crossroad
+			world.map[n.x][n.y].prop = objects.prop(itm)
+			if r > 0.25 then
+				world.insert(objects.actor(obj), n.x, n.y)
+			end
 		elseif #n.neighbors > 1 then
 			stg = stage.passage
+			if r > 0.25 then
+				world.insert(objects.actor(obj), n.x, n.y)
+			end
 		else
 			stg = stage.endpoint
 		end
