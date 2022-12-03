@@ -37,7 +37,7 @@ function menuscene:draw()
 
 	local v = math.sin(love.timer.getTime()) * 0.5 + 0.5
 	local col = util.lerprgb({64, 96, 128}, {200, 164, 0}, v)
-	love.graphics.setColor(col)
+	love.graphics.setColor(love.math.colorFromBytes(col))
 	
 	love.graphics.draw(self.title, 40, 40)
 end

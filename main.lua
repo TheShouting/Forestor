@@ -75,7 +75,7 @@ function love.load()
 		"[]\\;'.,/{}|:\"<>?`~", 1)
 	love.graphics.setFont(imgf)
 
-	love.graphics.setColor(255,255,255)
+	love.graphics.setColor(1,1,1)
 	love.graphics.setBackgroundColor(0,0,0)
 
 
@@ -95,6 +95,11 @@ function love.load()
 	
 end
 
+function love.mousepressed(x, y, button, istouch)
+	if button == 1 then
+		app:input(x, y)
+	end
+ end
 
 function love.touchpressed(id, x, y, pressure)
 	app:input(x, y)
@@ -139,12 +144,11 @@ function love.draw()
 	love.graphics.setCanvas(buffer)
 	love.graphics.setShader()
 	
-	love.graphics.setColor(0, 0, 0, 255 * delta * 8)
-	--love.graphics.setColor(0, 0, 0, 255)
+	love.graphics.setColor(0, 0, 0, 1.0 * delta * 16)
 	love.graphics.rectangle( 'fill', 0, 0, screen_w, screen_h )
 	
 	love.graphics.setBlendMode( 'lighten', 'premultiplied' )
-	love.graphics.setColor(255,255,255)
+	love.graphics.setColor(1,1,1)
 	love.graphics.draw(app.canvas, 0, 0, 0, scale)
 	
 	-- Draw the buffer to the window

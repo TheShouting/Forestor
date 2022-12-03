@@ -165,7 +165,7 @@ function scene:drawScene()
 		local alpha = 24
 		local dt = love.timer.getTime() - self.presstime
 		local a = alpha - math.min(dt*2, 1) * alpha
-		love.graphics.setColor(255, 255, 255, a)
+		love.graphics.setColor(1, 1, 1, a)
 		love.graphics.rectangle("fill", self.pressarea[1], self.pressarea[2], self.pressarea[3], self.pressarea[4])
 		love.graphics.circle("fill", self.presshit[1], self.presshit[2], 80)
 	end
@@ -182,15 +182,15 @@ function scene:drawScene()
 	end
 	
 	if self.debugmsg then
-		love.graphics.setColor(255,0,0)
+		love.graphics.setColor(1,0,0)
 		love.graphics.print(self.debugmsg, 10, 16)
 	end
 
 	-- Draw canvas
 	if not self.parent then
-		--love.graphics.setCanvas()
-		--love.graphics.setColor(255,255,255)
-		--love.graphics.draw(self.canvas, 0, 0, 0, self.scale)
+		-- love.graphics.setCanvas()
+		-- love.graphics.setColor(1,1,1)
+		-- love.graphics.draw(self.canvas, 0, 0, 0, self.scale)
 	end
 end
 

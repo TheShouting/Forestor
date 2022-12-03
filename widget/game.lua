@@ -69,10 +69,11 @@ function game:draw(view_w, view_h)
 	px = px * tw + view_w * 0.5
 	py = py * th + view_h * 0.5
 	
-	love.graphics.setColor(45, 30, 20)
+	-- Draw background illumination effect
+	love.graphics.setColor(love.math.colorFromBytes(45, 30, 20))
 	love.graphics.circle("fill", px, py - th * 0.5, tw * 4)
 
-   
+	-- Draw map
 	for x = 1, vw * 2 do
 		for y = 1, vh * 2 do
 		
@@ -104,7 +105,7 @@ function game:draw(view_w, view_h)
 				end
 				
 				col = color.processcolor(col, timer, r)
-				love.graphics.setColor(col)
+				love.graphics.setColor(love.math.colorFromBytes(col))
 				
 				local bitmask = self.world.getbitmask(wx, wy)
 				
@@ -113,7 +114,7 @@ function game:draw(view_w, view_h)
 				if prop then
 					love.graphics.setColor(0,0,0)
 					love.graphics.circle("fill", cx, cy - th * 0.5, tw * 0.5)
-					love.graphics.setColor(255,255,255)
+					love.graphics.setColor(1,1,1)
 					
 					local sprite = spriteset[prop]
 					self.handler:drawsprite(cx, cy, sprite, "ground")
@@ -209,7 +210,7 @@ function game:drawActor(a, th, tw, vw, vh)
 	
 	local o = a.pos.x * a.pos.y * self.world.random(a.pos.x, a.pos.y) * 0.01
 	local ac = color.processcolor(a:col(), timer, o)
-	love.graphics.setColor(ac)
+	love.graphics.setColor(love.math.colorFromBytes(ac))
 	
 	local sprite = spriteset[a:getSprite()]
 	if sprite then

@@ -45,7 +45,7 @@ end
 
 function testscene:draw()
 
-	love.graphics.setColor(64, 0, 0)
+	love.graphics.setColor(0.25, 0, 0)
 	love.graphics.rectangle("line", self.x, self.y, self.w, self.h)
 	love.graphics.line(0, 540, 1920, 540)
 	love.graphics.line(960, 0, 960, 1080)
@@ -62,7 +62,7 @@ function testscene:draw()
 				local y = node.y + py
 				
 				-- Draw Doors
-				love.graphics.setColor(128, 128, 128)
+				love.graphics.setColor(0.5, 0.5, 0.5)
 				for _, door in ipairs(self.level[i].doors) do
 					--love.graphics.rectangle("fill", x, y, 10, 10)
 					local door_x = door.x + px
@@ -94,10 +94,10 @@ function testscene:draw()
 					love.graphics.rectangle("fill", door_x - 2, door_y - 2, 4, 4)
 				end
 
-				love.graphics.setColor(32, 32, 32)
+				love.graphics.setColor(0.125, 0.125, 0.125)
 				--love.graphics.circle("line", x, y, self.min/2)
 				love.graphics.rectangle("line", x - node.size / 2, y - node.size / 2, node.size, node.size)
-				love.graphics.setColor(255, 255, 255)
+				love.graphics.setColor(1, 1, 1)
 				love.graphics.circle("fill",x,y,4)
 				love.graphics.print(i, x+5, y+5)
 
@@ -125,16 +125,16 @@ function testscene:draw()
 				
 			end
 
-			love.graphics.setColor(255, 0, 0)
+			love.graphics.setColor(1, 0, 0)
 			local ex = self.endpoint.x + px
 			local ey = self.endpoint.y + py
 			love.graphics.circle("line", ex, ey, 10)
 			love.graphics.print(self.dist, ex + 5, ey - 21)
 
-			love.graphics.setColor(0, 255, 0)
+			love.graphics.setColor(0, 1, 0)
 			love.graphics.circle("line",px,py,8)
 
-			love.graphics.setColor(0, 0, 255)
+			love.graphics.setColor(0, 0, 1)
 			local lx = self.last.x + px
 			local ly = self.last.y + py
 			love.graphics.circle("line", lx, ly, 10)
